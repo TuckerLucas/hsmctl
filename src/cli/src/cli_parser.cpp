@@ -14,5 +14,25 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
         return Command::HELP;
     }
 
+    if (std::string(argv[1]) == "inject-key")
+    {
+        return Command::INJECT_KEY;
+    }
+
+    if (std::string(argv[1]) == "update-key")
+    {
+        return Command::UPDATE_KEY;
+    }
+
+    if (std::string(argv[1]) == "get-key")
+    {
+        return Command::GET_KEY;
+    }
+
+    if (std::string(argv[1]) == "erase-key")
+    {
+        return Command::ERASE_KEY;
+    }
+
     return Command::UNKNOWN;
 }
