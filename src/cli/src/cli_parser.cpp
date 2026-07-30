@@ -9,27 +9,29 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
         return Command::UNKNOWN;
     }
 
-    if (std::string(argv[1]) == "--help")
+    std::string command = std::string(argv[1]);
+
+    if (command == "--help")
     {
         return Command::HELP;
     }
 
-    if (std::string(argv[1]) == "inject-key")
+    if (command == "inject-key")
     {
         return Command::INJECT_KEY;
     }
 
-    if (std::string(argv[1]) == "update-key")
+    if (command == "update-key")
     {
         return Command::UPDATE_KEY;
     }
 
-    if (std::string(argv[1]) == "get-key")
+    if (command == "get-key")
     {
         return Command::GET_KEY;
     }
 
-    if (std::string(argv[1]) == "erase-key")
+    if (command == "erase-key")
     {
         return Command::ERASE_KEY;
     }
