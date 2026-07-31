@@ -9,6 +9,8 @@ target_include_directories(hsmctl PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_link_libraries(hsmctl PRIVATE hsm)
+
 # ==== Tests ====
 add_executable(test_cli
     test/cli_parser.test.cpp
