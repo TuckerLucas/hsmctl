@@ -3,7 +3,6 @@
 enum class Command
 {
     // Global flags
-    UNKNOWN,
     HELP,
 
     // Commands
@@ -11,4 +10,6 @@ enum class Command
     UPDATE_KEY,
     GET_KEY,
     ERASE_KEY,
+
+    UNKNOWN,
 };

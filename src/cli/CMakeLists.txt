@@ -2,6 +2,7 @@
 add_executable(hsmctl
     src/main.cpp
     src/cli_parser.cpp
+    src/cli_display.cpp
 )
 
 target_include_directories(hsmctl PRIVATE
