@@ -16,20 +16,14 @@ int main(int argc, const char* argv[])
 
             break;
 
-        case Command::INJECT_KEY:
+        case Command::STATUS:
 
             break;
+            
+        case Command::UNKNOWN:
 
-        case Command::UPDATE_KEY:
-
-            break;
-
-        case Command::GET_KEY:
-
-            break;
-
-        case Command::ERASE_KEY:
-
+        default:
+            
             break;
     }
 

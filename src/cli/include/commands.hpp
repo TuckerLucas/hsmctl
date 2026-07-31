@@ -6,10 +6,7 @@ enum class Command
     HELP,
 
     // Commands
-    INJECT_KEY,
-    UPDATE_KEY,
-    GET_KEY,
-    ERASE_KEY,
+    STATUS,
 
     UNKNOWN,
 };

@@ -16,24 +16,9 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
         return Command::HELP;
     }
 
-    if (command == "inject-key")
+    if (command == "status")
     {
-        return Command::INJECT_KEY;
-    }
-
-    if (command == "update-key")
-    {
-        return Command::UPDATE_KEY;
-    }
-
-    if (command == "get-key")
-    {
-        return Command::GET_KEY;
-    }
-
-    if (command == "erase-key")
-    {
-        return Command::ERASE_KEY;
+        return Command::STATUS;
     }
 
     return Command::UNKNOWN;

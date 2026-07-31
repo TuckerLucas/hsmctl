@@ -20,31 +20,10 @@ TEST_CASE("parse_cmdline")
         REQUIRE(result == Command::HELP);
     }
 
-    SECTION("returns INJECT_KEY command")
+    SECTION("returns STATUS command")
     {
-        const char* argv[] = {"hsmctl", "inject-key"};
+        const char* argv[] = {"hsmctl", "status"};
         auto result = parser.parse_cmdline(2, argv);
-        REQUIRE(result == Command::INJECT_KEY);
-    }
-
-    SECTION("returns UPDATE_KEY command")
-    {
-        const char* argv[] = {"hsmctl", "update-key"};
-        auto result = parser.parse_cmdline(2, argv);
-        REQUIRE(result == Command::UPDATE_KEY);
-    }
-
-    SECTION("returns GET_KEY command")
-    {
-        const char* argv[] = {"hsmctl", "get-key"};
-        auto result = parser.parse_cmdline(2, argv);
-        REQUIRE(result == Command::GET_KEY);
-    }
-
-    SECTION("returns ERASE_KEY command")
-    {
-        const char* argv[] = {"hsmctl", "erase-key"};
-        auto result = parser.parse_cmdline(2, argv);
-        REQUIRE(result == Command::ERASE_KEY);
+        REQUIRE(result == Command::STATUS);
     }
 }
