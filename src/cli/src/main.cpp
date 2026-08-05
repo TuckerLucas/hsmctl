@@ -1,7 +1,7 @@
+#include "SecureElement.hpp"
 #include "cli_display.hpp"
 #include "cli_parser.hpp"
 #include "hsm_manager.hpp"
-#include "SecureElement.hpp"
 
 int main(int argc, const char* argv[])
 {
@@ -16,15 +16,21 @@ int main(int argc, const char* argv[])
     cli_parser parser;
     Command command = parser.parse_cmdline(argc, argv);
 
-    switch (command)
+    if (command.error != ParseError::NONE)
     {
-        case Command::HELP:
+        display.commandError(command);
+        return 1;
+    }
+
+    switch (command.operation)
+    {
+        case Operation::HELP:
         {
             display.help();
 
             break;
         }
-        case Command::STATUS:
+        case Operation::STATUS:
         {
             SecureElement se;
             hsm_manager hsm(se);
@@ -35,7 +41,19 @@ int main(int argc, const char* argv[])
 
             break;
         }
-        case Command::UNKNOWN:
+        case Operation::ERASE_KEY:
+        {
+            SecureElement se;
+            hsm_manager hsm(se);
+
+            uint8_t slot = std::stoi(command.options["slot"]);
+            SecureElementStatus result = hsm.eraseKey(slot);
+
+            display.eraseKey(result, slot);
+
+            break;
+        }
+        case Operation::NONE:
         default:
             display.unknown(argv[1]);
             break;

@@ -1,16 +1,6 @@
 #pragma once
 
-enum class Command
-{
-    // Global flags
-    HELP,
-
-    // Commands
-    STATUS,
-
-    UNKNOWN,
-    NONE,
-};
+#include "cli_types.hpp"
 
 class cli_parser
 {

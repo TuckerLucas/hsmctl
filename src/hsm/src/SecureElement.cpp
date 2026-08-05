@@ -83,6 +83,19 @@ SecureElementStatus SecureElement::ping()
     return SecureElementStatus::OK;
 }
 
+SecureElementStatus SecureElement::eraseKey(uint8_t slot)
+{
+    if (lt_ecc_key_erase(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot)) != LT_OK)
+    {
+        lt_session_abort(&m_impl->handle);
+        lt_deinit(&m_impl->handle);
+        mbedtls_psa_crypto_free();
+        return SecureElementStatus::ERROR_ERASE_KEY;
+    }
+
+    return SecureElementStatus::OK;
+}
+
 SecureElementStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)
