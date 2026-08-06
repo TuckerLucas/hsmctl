@@ -13,6 +13,7 @@ public:
     SecureElementStatus init() override;
     SecureElementStatus ping() override;
     SecureElementStatus eraseKey(uint8_t slot) override;
+    SecureElementStatus generateKey(uint8_t slot) override;
     SecureElementStatus deinit() override;
 
 private:

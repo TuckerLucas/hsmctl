@@ -8,6 +8,7 @@ enum class SecureElementStatus
     ERROR_INIT,
     ERROR_PING,
     ERROR_ERASE_KEY,
+    ERROR_GENERATE_KEY,
     ERROR_DEINIT,
 };
 
@@ -17,6 +18,7 @@ public:
     virtual SecureElementStatus init() = 0;
     virtual SecureElementStatus ping() = 0;
     virtual SecureElementStatus eraseKey(uint8_t slot) = 0;
+    virtual SecureElementStatus generateKey(uint8_t slot) = 0;
     virtual SecureElementStatus deinit() = 0;
 
     virtual ~ISecureElement() = default;

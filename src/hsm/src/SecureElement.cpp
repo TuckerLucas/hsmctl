@@ -96,6 +96,20 @@ SecureElementStatus SecureElement::eraseKey(uint8_t slot)
     return SecureElementStatus::OK;
 }
 
+SecureElementStatus SecureElement::generateKey(uint8_t slot)
+{
+    if (lt_ecc_key_generate(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot),
+                            TR01_CURVE_ED25519) != LT_OK)
+    {
+        lt_session_abort(&m_impl->handle);
+        lt_deinit(&m_impl->handle);
+        mbedtls_psa_crypto_free();
+        return SecureElementStatus::ERROR_GENERATE_KEY;
+    }
+
+    return SecureElementStatus::OK;
+}
+
 SecureElementStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)

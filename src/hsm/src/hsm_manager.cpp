@@ -47,10 +47,28 @@ SecureElementStatus hsm_manager::eraseKey(uint8_t slot)
 
     result = m_se.deinit();
 
+    return result;
+}
+
+SecureElementStatus hsm_manager::generateKey(uint8_t slot)
+{
+    SecureElementStatus result;
+
+    result = m_se.init();
+
     if (result != SecureElementStatus::OK)
     {
         return result;
     }
 
-    return SecureElementStatus::OK;
+    result = m_se.generateKey(slot);
+
+    if (result != SecureElementStatus::OK)
+    {
+        return result;
+    }
+
+    result = m_se.deinit();
+
+    return result;
 }

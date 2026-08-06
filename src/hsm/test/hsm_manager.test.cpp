@@ -4,10 +4,17 @@
 
 #include "MockSecureElement.hpp"
 
-TEST_CASE("hsm_manager status")
+TEST_CASE("status")
 {
     MockSecureElement mock;
     hsm_manager hsm(mock);
+
+    SECTION("success")
+    {
+        auto result = hsm.status();
+
+        REQUIRE(result == SecureElementStatus::OK);
+    }
 
     SECTION("init fails")
     {
@@ -35,20 +42,20 @@ TEST_CASE("hsm_manager status")
 
         REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
     }
-
-    SECTION("success")
-    {
-        auto result = hsm.status();
-
-        REQUIRE(result == SecureElementStatus::OK);
-    }
 }
 
-TEST_CASE("hsm_manager eraseKey")
+TEST_CASE("eraseKey")
 {
     MockSecureElement mock;
     hsm_manager hsm(mock);
     uint8_t slot;
+
+    SECTION("success")
+    {
+        auto result = hsm.eraseKey(slot);
+
+        REQUIRE(result == SecureElementStatus::OK);
+    }
 
     SECTION("init fails")
     {
@@ -76,11 +83,45 @@ TEST_CASE("hsm_manager eraseKey")
 
         REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
     }
+}
+
+TEST_CASE("generateKey")
+{
+    MockSecureElement mock;
+    hsm_manager hsm(mock);
+    uint8_t slot;
 
     SECTION("success")
     {
-        auto result = hsm.eraseKey(slot);
+        auto result = hsm.generateKey(slot);
 
         REQUIRE(result == SecureElementStatus::OK);
+    }
+
+    SECTION("init fails")
+    {
+        mock.initResult = SecureElementStatus::ERROR_INIT;
+
+        auto result = hsm.generateKey(slot);
+
+        REQUIRE(result == SecureElementStatus::ERROR_INIT);
+    }
+
+    SECTION("generateKey fails")
+    {
+        mock.generateKeyResult = SecureElementStatus::ERROR_GENERATE_KEY;
+
+        auto result = hsm.generateKey(slot);
+
+        REQUIRE(result == SecureElementStatus::ERROR_GENERATE_KEY);
+    }
+
+    SECTION("deinit fails")
+    {
+        mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+        auto result = hsm.generateKey(slot);
+
+        REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
     }
 }

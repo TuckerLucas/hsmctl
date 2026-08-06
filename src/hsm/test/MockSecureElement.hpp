@@ -8,6 +8,7 @@ public:
     SecureElementStatus initResult = SecureElementStatus::OK;
     SecureElementStatus pingResult = SecureElementStatus::OK;
     SecureElementStatus eraseKeyResult = SecureElementStatus::OK;
+    SecureElementStatus generateKeyResult = SecureElementStatus::OK;
     SecureElementStatus deinitResult = SecureElementStatus::OK;
 
     SecureElementStatus init() override
@@ -23,6 +24,11 @@ public:
     SecureElementStatus eraseKey(uint8_t) override
     {
         return eraseKeyResult;
+    }
+
+    SecureElementStatus generateKey(uint8_t) override
+    {
+        return generateKeyResult;
     }
 
     SecureElementStatus deinit() override

@@ -3,6 +3,9 @@
 #include <string>
 #include <unordered_map>
 
+#define MIN_SLOT 0
+#define MAX_SLOT 31
+
 enum class Operation
 {
     // Global flags
@@ -11,6 +14,7 @@ enum class Operation
     // Operations
     STATUS,
     ERASE_KEY,
+    GENERATE_KEY,
 
     NONE,
 };

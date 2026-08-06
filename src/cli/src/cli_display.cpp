@@ -4,10 +4,12 @@ std::string cli_display::operationToString(Operation operation)
 {
     switch (operation)
     {
-        case Operation::ERASE_KEY:
-            return "erase-key";
         case Operation::STATUS:
             return "status";
+        case Operation::ERASE_KEY:
+            return "erase-key";
+        case Operation::GENERATE_KEY:
+            return "generate-key";
         default:
             return "unknown";
     }
@@ -17,20 +19,21 @@ void cli_display::help()
 {
     std::cout << "hsmctl <operation> [options]\n";
     std::cout << "\n";
-    std::cout << "HSM key management and audit logging\n";
+    std::cout << "HSM key management and audit logging.\n";
     std::cout << "\n";
     std::cout << "Usage:\n";
     std::cout << "\n";
-    std::cout << "\tGlobal flags:\n";
-    std::cout << "\t\t--help       Show this help menu\n";
+    std::cout << "        Global flags:\n";
+    std::cout << "                     --help         Show this help menu.\n";
     std::cout << "\n";
-    std::cout << "\tOperations:\n";
-    std::cout << "\t\tstatus       Check hardware status\n";
-    std::cout << "\t\terase-key    Erase a key\n";
+    std::cout << "        Operations:\n";
+    std::cout << "                     status         Check hardware status.\n";
+    std::cout << "                     erase-key      Erase a key.\n";
+    std::cout << "                     generate-key   Generate an ECC key pair.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
-    std::cout << "\tRun 'hsmctl <operation> --help' for operation specific help\n";
+    std::cout << "        Run 'hsmctl <operation> --help' for operation specific help.\n";
 }
 
 void cli_display::commandError(Command command)
@@ -39,34 +42,34 @@ void cli_display::commandError(Command command)
     {
         case ParseError::MISSING_OPERATION:
         {
-            std::cout << "No operation specified. Run 'hsmctl --help' for available operations\n";
+            std::cout << "No operation specified. Run 'hsmctl --help' for available operations.\n";
             break;
         }
         case ParseError::INVALID_OPERATION:
         {
             std::cout
-                << "Invalid operation specified. Run 'hsmctl --help' for available operations\n";
+                << "Invalid operation specified. Run 'hsmctl --help' for available operations.\n";
             break;
         }
         case ParseError::MISSING_OPTION:
         {
-            std::cout << operationToString(command.operation) << ": needs an option\n";
+            std::cout << operationToString(command.operation) << ": needs an option.\n";
             break;
         }
         case ParseError::INVALID_OPTION:
         {
-            std::cout << operationToString(command.operation) << ": invalid option\n";
+            std::cout << operationToString(command.operation) << ": invalid option.\n";
             break;
         }
         case ParseError::MISSING_VALUE:
         {
-            std::cout << operationToString(command.operation) << " --slot: needs a value\n";
+            std::cout << operationToString(command.operation) << " --slot: needs a value.\n";
             break;
         }
         case ParseError::INVALID_VALUE:
         {
-            std::cout << operationToString(command.operation)
-                      << " --slot: supported slots are [0, 31]\n";
+            std::cout << operationToString(command.operation) << " --slot: supported slots are ["
+                      << MIN_SLOT << ", " << MAX_SLOT << "].\n";
             break;
         }
     }
@@ -83,11 +86,11 @@ void cli_display::status(SecureElementStatus result)
         std::cout << "Could not detect hardware: ";
 
         if (result == SecureElementStatus::ERROR_INIT)
-            std::cout << "initialisation error\n";
+            std::cout << "initialisation error. Check that the security module is connected.\n";
         else if (result == SecureElementStatus::ERROR_PING)
-            std::cout << "ping failed\n";
+            std::cout << "ping failed. Check that the security module is connected.\n";
         else if (result == SecureElementStatus::ERROR_DEINIT)
-            std::cout << "deinitialisation error\n";
+            std::cout << "deinitialisation error.\n";
     }
 }
 
@@ -102,38 +105,86 @@ void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
         std::cout << "Operation failed: ";
 
         if (result == SecureElementStatus::ERROR_INIT)
-            std::cout << "initialisation error\n";
+            std::cout << "initialisation error. Check that the security module is connected.\n";
         else if (result == SecureElementStatus::ERROR_ERASE_KEY)
-            std::cout << "erase failed\n";
+            std::cout << "could not erase key.\n";
         else if (result == SecureElementStatus::ERROR_DEINIT)
-            std::cout << "deinitialisation error\n";
+            std::cout << "deinitialisation error.\n";
+    }
+}
+
+void cli_display::generateKey(SecureElementStatus result, uint8_t slot)
+{
+    if (result == SecureElementStatus::OK)
+    {
+        std::cout << "Key generated!\n";
+    }
+    else
+    {
+        std::cout << "Operation failed: ";
+
+        if (result == SecureElementStatus::ERROR_INIT)
+            std::cout << "initialisation error. Check that the security module is connected.\n";
+        else if (result == SecureElementStatus::ERROR_GENERATE_KEY)
+        {
+            std::cout << "could not generate key.";
+            std::cout << "\n";
+            std::cout << "Slot " << static_cast<int>(slot)
+                      << " may already contain a key. Run 'hsmctl erase-key --slot "
+                      << static_cast<int>(slot) << "' to erase it first.";
+            std::cout << "\n";
+        }
+        else if (result == SecureElementStatus::ERROR_DEINIT)
+            std::cout << "deinitialisation error.\n";
     }
 }
 
 void cli_display::status_help()
 {
     std::cout << "Usage:\n";
-    std::cout << "\thsmctl status\n";
+    std::cout << "        hsmctl status\n";
     std::cout << "\n";
     std::cout << "Description:\n";
-    std::cout << "\tChecks if the HSM is connected and responding\n";
+    std::cout << "        Checks if the HSM is connected and responding.\n";
     std::cout << "\n";
     std::cout << "Examples:\n";
-    std::cout << "\thsmctl status\n";
+    std::cout << "        hsmctl status\n";
 }
 
 void cli_display::eraseKey_help()
 {
     std::cout << "Usage:\n";
-    std::cout << "\thsmctl erase-key --slot <slot>\n";
+    std::cout << "        hsmctl erase-key --slot <slot>\n";
     std::cout << "\n";
     std::cout << "Description:\n";
-    std::cout << "\tErases the key stored in the specified slot on the HSM\n";
+    std::cout << "        Erases the key stored in the specified slot on the HSM.\n";
     std::cout << "\n";
     std::cout << "Options:\n";
-    std::cout << "\t--slot <0-31>\tSlot number to erase\n";
+    std::cout << "        --slot <" << MIN_SLOT << ", " << MAX_SLOT
+              << ">    Slot number to erase.\n";
     std::cout << "\n";
     std::cout << "Examples:\n";
-    std::cout << "\thsmctl erase-key --slot 0\n";
-    std::cout << "\thsmctl erase-key --slot 28\n";
+    std::cout << "        hsmctl erase-key --slot 0\n";
+    std::cout << "        hsmctl erase-key --slot 28\n";
+}
+
+void cli_display::generateKey_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl generate-key --slot <slot>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "        Generates an ECC key pair in the specified slot on the HSM.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --slot  <" << MIN_SLOT << ", " << MAX_SLOT
+              << ">   Slot number to erase.\n";
+    std::cout << "        --curve <curve>   Curve to use for key generation\n";
+    std::cout << "                          ed25519   Edwards curve (default)\n";
+    std::cout << "                          p256      NIST P-256 curve\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl generate-key --slot 3\n";
+    std::cout << "        hsmctl generate-key --slot 3 --curve ed25519\n";
+    std::cout << "        hsmctl generate-key --slot 3 --curve p256\n";
 }

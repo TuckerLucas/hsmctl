@@ -65,6 +65,24 @@ int main(int argc, const char* argv[])
 
             break;
         }
+        case Operation::GENERATE_KEY:
+        {
+            if (command.help == true)
+            {
+                display.generateKey_help();
+                return 0;
+            }
+
+            SecureElement se;
+            hsm_manager hsm(se);
+
+            uint8_t slot = std::stoi(command.options["slot"]);
+            SecureElementStatus result = hsm.generateKey(slot);
+
+            display.generateKey(result, slot);
+
+            break;
+        }
         case Operation::NONE:
         default:
             display.commandError(command);
