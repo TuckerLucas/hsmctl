@@ -55,8 +55,8 @@ int main(int argc, const char* argv[])
         }
         case Operation::NONE:
         default:
-            display.unknown(argv[1]);
-            break;
+            display.commandError(command);
+            return 1;
     }
 
     return 0;

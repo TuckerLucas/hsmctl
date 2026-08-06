@@ -17,12 +17,24 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
     if (operation == "--help")
     {
         command.operation = Operation::HELP;
+
+        if (argc > 2)
+        {
+            command.error = ParseError::INVALID_OPTION;
+        }
+
         return command;
     }
 
     if (operation == "status")
     {
         command.operation = Operation::STATUS;
+
+        if (argc > 2)
+        {
+            command.error = ParseError::INVALID_OPTION;
+        }
+
         return command;
     }
 
@@ -34,6 +46,11 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
         {
             command.error = ParseError::MISSING_OPTION;
             return command;
+        }
+
+        if (argc > 4)
+        {
+            command.error = ParseError::INVALID_OPTION;
         }
 
         std::string option = std::string(argv[2]);
@@ -70,6 +87,8 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
 
         return command;
     }
+
+    command.error = ParseError::INVALID_OPERATION;
 
     return command;
 }

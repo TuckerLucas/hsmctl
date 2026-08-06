@@ -30,12 +30,6 @@ void cli_display::help()
     std::cout << "\n";
 }
 
-void cli_display::unknown(const std::string& input)
-{
-    std::cout << "Unknown operation: '" << input << "'\n";
-    std::cout << "Run 'hsmctl --help' for available operations\n";
-}
-
 void cli_display::commandError(Command command)
 {
     switch (command.error)
@@ -43,6 +37,12 @@ void cli_display::commandError(Command command)
         case ParseError::MISSING_OPERATION:
         {
             std::cout << "No operation specified. Run 'hsmctl --help' for available operations\n";
+            break;
+        }
+        case ParseError::INVALID_OPERATION:
+        {
+            std::cout
+                << "Invalid operation specified. Run 'hsmctl --help' for available operations\n";
             break;
         }
         case ParseError::MISSING_OPTION:
@@ -92,7 +92,7 @@ void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
 {
     if (result == SecureElementStatus::OK)
     {
-        std::cout << "Key erased from slot " << slot << "!\n";
+        std::cout << "Key erased from slot " << static_cast<int>(slot) << "!\n";
     }
     else
     {

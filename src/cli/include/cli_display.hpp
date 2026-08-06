@@ -13,7 +13,6 @@ private:
 
 public:
     void help();
-    void unknown(const std::string& input);
     void commandError(Command command);
 
     void status(SecureElementStatus result);

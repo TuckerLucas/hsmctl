@@ -6,23 +6,75 @@ TEST_CASE("cli_parser parse_cmdline")
 {
     cli_parser parser;
 
-    SECTION("success")
+    SECTION("no operation")
     {
-        SECTION("--help")
+        const char* argv[] = {"hsmctl"};
+
+        auto parsed_command = parser.parse_cmdline(1, argv);
+
+        REQUIRE(parsed_command.operation == Operation::NONE);
+        REQUIRE(parsed_command.error == ParseError::MISSING_OPERATION);
+    }
+
+    SECTION("invalid operation")
+    {
+        const char* argv[] = {"hsmctl", "invalid-operation"};
+
+        auto result = parser.parse_cmdline(2, argv);
+
+        REQUIRE(result.operation == Operation::NONE);
+        REQUIRE(result.error == ParseError::INVALID_OPERATION);
+    }
+
+    SECTION("--help")
+    {
+        SECTION("success")
         {
             const char* argv[] = {"hsmctl", "--help"};
+
             auto parsed_command = parser.parse_cmdline(2, argv);
+
             REQUIRE(parsed_command.operation == Operation::HELP);
+            REQUIRE(parsed_command.error == ParseError::NONE);
         }
 
-        SECTION("status")
+        SECTION("invalid option")
+        {
+            const char* argv[] = {"hsmctl", "--help", "--some-option"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::HELP);
+            REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+        }
+    }
+
+    SECTION("status")
+    {
+        SECTION("success")
         {
             const char* argv[] = {"hsmctl", "status"};
+
             auto parsed_command = parser.parse_cmdline(2, argv);
+
             REQUIRE(parsed_command.operation == Operation::STATUS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
         }
 
-        SECTION("erase-key")
+        SECTION("invalid option")
+        {
+            const char* argv[] = {"hsmctl", "status", "--some-option"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::STATUS);
+            REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+        }
+    }
+
+    SECTION("erase-key")
+    {
+        SECTION("success")
         {
             const char* argv[] = {"hsmctl", "erase-key", "--slot", "2"};
 
@@ -30,70 +82,72 @@ TEST_CASE("cli_parser parse_cmdline")
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.options["slot"] == "2");
-        }
-    }
-
-    SECTION("returns MISSING_OPERATION parse error")
-    {
-        const char* argv[] = {"hsmctl"};
-        auto parsed_command = parser.parse_cmdline(1, argv);
-
-        REQUIRE(parsed_command.operation == Operation::NONE);
-        REQUIRE(parsed_command.error == ParseError::MISSING_OPERATION);
-    }
-
-    SECTION("returns MISSING_OPTION parse error")
-    {
-        const char* argv[] = {"hsmctl", "erase-key"};
-
-        auto parsed_command = parser.parse_cmdline(2, argv);
-
-        REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
-        REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
-    }
-
-    SECTION("returns INVALID_OPTION parse error")
-    {
-        const char* argv[] = {"hsmctl", "erase-key", "--invalid-option"};
-
-        auto parsed_command = parser.parse_cmdline(3, argv);
-
-        REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
-        REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
-    }
-
-    SECTION("returns MISSING_SPECIFIER parse error")
-    {
-        const char* argv[] = {"hsmctl", "erase-key", "--slot"};
-
-        auto parsed_command = parser.parse_cmdline(3, argv);
-
-        REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
-        REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
-    }
-
-    SECTION("returns INVALID_SPECIFIER parse error")
-    {
-        const char* argv[] = {"hsmctl", "erase-key", "--slot"};
-
-        SECTION("key slot out of range")
-        {
-            argv[3] = "32";
-
-            auto parsed_command = parser.parse_cmdline(4, argv);
-
-            REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
-            REQUIRE(parsed_command.error == ParseError::INVALID_VALUE);
+            REQUIRE(parsed_command.error == ParseError::NONE);
         }
 
-        SECTION("key slot not a number")
+        SECTION("missing option")
         {
-            argv[3] = "NaN";
+            const char* argv[] = {"hsmctl", "erase-key"};
 
-            auto parsed_command = parser.parse_cmdline(4, argv);
+            auto parsed_command = parser.parse_cmdline(2, argv);
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
-            REQUIRE(parsed_command.error == ParseError::INVALID_VALUE);
+            REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
+        }
+
+        SECTION("invalid option")
+        {
+            SECTION("unknown option")
+            {
+                const char* argv[] = {"hsmctl", "erase-key", "--invalid-option"};
+
+                auto parsed_command = parser.parse_cmdline(3, argv);
+
+                REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+            SECTION("trailing garbage after valid command")
+            {
+                const char* argv[] = {"hsmctl", "erase-key", "--slot", "0", "garbage"};
+
+                auto parsed_command = parser.parse_cmdline(5, argv);
+
+                REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+        }
+
+        SECTION("missing slot value")
+        {
+            const char* argv[] = {"hsmctl", "erase-key", "--slot"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
+            REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+        }
+
+        SECTION("invalid slot value")
+        {
+            SECTION("not a number")
+            {
+                const char* argv[] = {"hsmctl", "erase-key", "--slot", "NaN"};
+
+                auto result = parser.parse_cmdline(4, argv);
+
+                REQUIRE(result.operation == Operation::ERASE_KEY);
+                REQUIRE(result.error == ParseError::INVALID_VALUE);
+            }
+
+            SECTION("out of boundaries")
+            {
+                const char* argv[] = {"hsmctl", "erase-key", "--slot", "32"};
+
+                auto result = parser.parse_cmdline(4, argv);
+
+                REQUIRE(result.operation == Operation::ERASE_KEY);
+                REQUIRE(result.error == ParseError::INVALID_VALUE);
+            }
         }
     }
 }

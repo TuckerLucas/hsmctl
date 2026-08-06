@@ -18,6 +18,7 @@ enum class Operation
 enum class ParseError
 {
     MISSING_OPERATION,
+    INVALID_OPERATION,
     MISSING_OPTION,
     INVALID_OPTION,
     MISSING_VALUE,
