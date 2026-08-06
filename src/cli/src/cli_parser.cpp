@@ -30,6 +30,12 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
     {
         command.operation = Operation::STATUS;
 
+        if (argc == 3 && std::string(argv[2]) == "--help")
+        {
+            command.help = true;
+            return command;
+        }
+
         if (argc > 2)
         {
             command.error = ParseError::INVALID_OPTION;
@@ -41,6 +47,12 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
     if (operation == "erase-key")
     {
         command.operation = Operation::ERASE_KEY;
+
+        if (argc == 3 && std::string(argv[2]) == "--help")
+        {
+            command.help = true;
+            return command;
+        }
 
         if (argc < 3)
         {

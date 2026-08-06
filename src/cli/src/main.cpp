@@ -32,6 +32,12 @@ int main(int argc, const char* argv[])
         }
         case Operation::STATUS:
         {
+            if (command.help == true)
+            {
+                display.status_help();
+                return 0;
+            }
+
             SecureElement se;
             hsm_manager hsm(se);
 
@@ -43,6 +49,12 @@ int main(int argc, const char* argv[])
         }
         case Operation::ERASE_KEY:
         {
+            if (command.help == true)
+            {
+                display.eraseKey_help();
+                return 0;
+            }
+
             SecureElement se;
             hsm_manager hsm(se);
 

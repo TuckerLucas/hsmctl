@@ -31,5 +31,6 @@ struct Command
 {
     Operation operation = Operation::NONE;
     std::unordered_map<std::string, std::string> options;
+    bool help = false;
     ParseError error = ParseError::NONE;
 };

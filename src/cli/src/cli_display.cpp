@@ -15,7 +15,7 @@ std::string cli_display::operationToString(Operation operation)
 
 void cli_display::help()
 {
-    std::cout << "hsmctl <OPERATION> [OPTIONS]\n";
+    std::cout << "hsmctl <operation> [options]\n";
     std::cout << "\n";
     std::cout << "HSM key management and audit logging\n";
     std::cout << "\n";
@@ -28,6 +28,9 @@ void cli_display::help()
     std::cout << "\t\tstatus       Check hardware status\n";
     std::cout << "\t\terase-key    Erase a key\n";
     std::cout << "\n";
+    std::cout << "Hint:\n";
+    std::cout << "\n";
+    std::cout << "\tRun 'hsmctl <operation> --help' for operation specific help\n";
 }
 
 void cli_display::commandError(Command command)
@@ -105,4 +108,32 @@ void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
         else if (result == SecureElementStatus::ERROR_DEINIT)
             std::cout << "deinitialisation error\n";
     }
+}
+
+void cli_display::status_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "\thsmctl status\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "\tChecks if the HSM is connected and responding\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "\thsmctl status\n";
+}
+
+void cli_display::eraseKey_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "\thsmctl erase-key --slot <slot>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "\tErases the key stored in the specified slot on the HSM\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "\t--slot <0-31>\tSlot number to erase\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "\thsmctl erase-key --slot 0\n";
+    std::cout << "\thsmctl erase-key --slot 28\n";
 }

@@ -61,6 +61,17 @@ TEST_CASE("cli_parser parse_cmdline")
             REQUIRE(parsed_command.error == ParseError::NONE);
         }
 
+        SECTION("help")
+        {
+            const char* argv[] = {"hsmctl", "status", "--help"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::STATUS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.help == true);
+        }
+
         SECTION("invalid option")
         {
             const char* argv[] = {"hsmctl", "status", "--some-option"};
@@ -83,6 +94,17 @@ TEST_CASE("cli_parser parse_cmdline")
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.options["slot"] == "2");
             REQUIRE(parsed_command.error == ParseError::NONE);
+        }
+
+        SECTION("help")
+        {
+            const char* argv[] = {"hsmctl", "erase-key", "--help"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.help == true);
         }
 
         SECTION("missing option")
