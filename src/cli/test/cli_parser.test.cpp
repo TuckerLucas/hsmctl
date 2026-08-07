@@ -98,6 +98,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.options["slot"] == "2");
                 REQUIRE(parsed_command.error == ParseError::NONE);
             }
+
             SECTION("boundary slots")
             {
                 SECTION("lower boundary")
@@ -217,7 +218,7 @@ TEST_CASE("cli_parser parse_cmdline")
     {
         SECTION("success")
         {
-            SECTION("unspecified curve")
+            SECTION("non-boundary slot")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--slot", "10"};
 
@@ -226,6 +227,33 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.options["slot"] == "10");
                 REQUIRE(parsed_command.error == ParseError::NONE);
+            }
+
+            SECTION("boundary slots")
+            {
+                SECTION("lower boundary")
+                {
+                    std::string min_slot_str = std::to_string(MIN_SLOT);
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot", min_slot_str.c_str()};
+
+                    auto parsed_command = parser.parse_cmdline(4, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                }
+
+                SECTION("upper boundary")
+                {
+                    std::string max_slot_str = std::to_string(MAX_SLOT);
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot", max_slot_str.c_str()};
+
+                    auto parsed_command = parser.parse_cmdline(4, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                }
             }
         }
 
@@ -267,6 +295,16 @@ TEST_CASE("cli_parser parse_cmdline")
                 const char* argv[] = {"hsmctl", "generate-key", "--slot", "0", "garbage"};
 
                 auto parsed_command = parser.parse_cmdline(5, argv);
+
+                REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+
+            SECTION("duplicate --slot")
+            {
+                const char* argv[] = {"hsmctl", "generate-key", "--slot", "3", "--slot", "14"};
+
+                auto parsed_command = parser.parse_cmdline(6, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
