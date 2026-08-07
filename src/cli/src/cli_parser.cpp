@@ -47,12 +47,7 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
     if (operation == "erase-key")
     {
         command.operation = Operation::ERASE_KEY;
-
-        if (argc == 3 && std::string(argv[2]) == "--help")
-        {
-            command.help = true;
-            return command;
-        }
+        bool slot_option_used = false;
 
         if (argc < 3)
         {
@@ -60,42 +55,62 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
             return command;
         }
 
-        if (argc > 4)
+        for (int i = 2; i < argc; i++)
         {
-            command.error = ParseError::INVALID_OPTION;
-            return command;
-        }
+            std::string arg = argv[i];
 
-        std::string option = std::string(argv[2]);
-
-        if (option != "--slot")
-        {
-            command.error = ParseError::INVALID_OPTION;
-            return command;
-        }
-
-        if (argc < 4)
-        {
-            command.error = ParseError::MISSING_VALUE;
-            return command;
-        }
-
-        try
-        {
-            u_int8_t slot = std::stoi(std::string(argv[3]));
-
-            if (slot < MIN_SLOT || slot > MAX_SLOT)
+            if (arg == "--help")
             {
-                command.error = ParseError::INVALID_VALUE;
+                if (argc != 3)
+                {
+                    command.error = ParseError::INVALID_OPTION;
+                    return command;
+                }
+
+                command.help = true;
                 return command;
             }
+            else if (arg == "--slot")
+            {
+                if (slot_option_used)
+                {
+                    command.error = ParseError::INVALID_OPTION;
+                    return command;
+                }
 
-            command.options["slot"] = std::string(argv[3]);
-        }
-        catch (const std::invalid_argument&)
-        {
-            command.error = ParseError::INVALID_VALUE;
-            return command;
+                slot_option_used = true;
+
+                if (i + 1 >= argc)
+                {
+                    command.error = ParseError::MISSING_VALUE;
+                    return command;
+                }
+
+                i++;
+
+                try
+                {
+                    u_int8_t slot = std::stoi(argv[i]);
+
+                    if (slot < MIN_SLOT || slot > MAX_SLOT)
+                    {
+                        command.error = ParseError::INVALID_VALUE;
+                        return command;
+                    }
+
+                    command.options["slot"] = std::string(argv[i]);
+                }
+                catch (const std::invalid_argument&)
+                {
+                    command.error = ParseError::INVALID_VALUE;
+                    return command;
+                }
+            }
+            else
+            {
+                command.error = ParseError::INVALID_OPTION;
+                return command;
+            }
         }
 
         return command;
