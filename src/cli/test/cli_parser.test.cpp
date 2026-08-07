@@ -27,7 +27,7 @@ TEST_CASE("cli_parser parse_cmdline")
         REQUIRE(result.error == ParseError::INVALID_OPERATION);
     }
 
-    SECTION("--help")
+    SECTION("help")
     {
         SECTION("success")
         {
@@ -169,7 +169,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
             }
 
-            SECTION("duplicate --slot")
+            SECTION("duplicate slot")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "3", "--slot", "14"};
 
@@ -218,7 +218,7 @@ TEST_CASE("cli_parser parse_cmdline")
     {
         SECTION("success")
         {
-            SECTION("non-boundary slot")
+            SECTION("unspecified curve")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--slot", "10"};
 
@@ -226,7 +226,50 @@ TEST_CASE("cli_parser parse_cmdline")
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.options["slot"] == "10");
+                REQUIRE(parsed_command.options["curve"] == "ed25519");
                 REQUIRE(parsed_command.error == ParseError::NONE);
+            }
+
+            SECTION("specified curve")
+            {
+                SECTION("ED25519")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot",
+                                          "12",     "--curve",      "ed25519"};
+
+                    auto parsed_command = parser.parse_cmdline(6, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.options["slot"] == "12");
+                    REQUIRE(parsed_command.options["curve"] == "ed25519");
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                }
+
+                SECTION("NIST P-256")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot",
+                                          "18",     "--curve",      "p256"};
+
+                    auto parsed_command = parser.parse_cmdline(6, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.options["slot"] == "18");
+                    REQUIRE(parsed_command.options["curve"] == "p256");
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                }
+
+                SECTION("reversed operation order")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--curve",
+                                          "p256",   "--slot",       "16"};
+
+                    auto parsed_command = parser.parse_cmdline(6, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.options["slot"] == "16");
+                    REQUIRE(parsed_command.options["curve"] == "p256");
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                }
             }
 
             SECTION("boundary slots")
@@ -270,12 +313,25 @@ TEST_CASE("cli_parser parse_cmdline")
 
         SECTION("missing option")
         {
-            const char* argv[] = {"hsmctl", "generate-key"};
+            SECTION("unspecified curve")
+            {
+                const char* argv[] = {"hsmctl", "generate-key"};
 
-            auto parsed_command = parser.parse_cmdline(2, argv);
+                auto parsed_command = parser.parse_cmdline(2, argv);
 
-            REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
-            REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
+                REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
+            }
+
+            SECTION("specified curve")
+            {
+                const char* argv[] = {"hsmctl", "generate-key", "--curve", "p256"};
+
+                auto parsed_command = parser.parse_cmdline(4, argv);
+
+                REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
+            }
         }
 
         SECTION("invalid option")
@@ -300,14 +356,28 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
             }
 
-            SECTION("duplicate --slot")
+            SECTION("duplicate options")
             {
-                const char* argv[] = {"hsmctl", "generate-key", "--slot", "3", "--slot", "14"};
+                SECTION("slot")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot", "3", "--slot", "14"};
 
-                auto parsed_command = parser.parse_cmdline(6, argv);
+                    auto parsed_command = parser.parse_cmdline(6, argv);
 
-                REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
-                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+                }
+
+                SECTION("curve")
+                {
+                    const char* argv[] = {"hsmctl",  "generate-key", "--slot",  "3",
+                                          "--curve", "ed25519",      "--curve", "p256"};
+
+                    auto parsed_command = parser.parse_cmdline(8, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+                }
             }
         }
 
@@ -315,12 +385,58 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             SECTION("slot")
             {
-                const char* argv[] = {"hsmctl", "generate-key", "--slot"};
+                SECTION("unspecified curve")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot"};
 
-                auto parsed_command = parser.parse_cmdline(3, argv);
+                    auto parsed_command = parser.parse_cmdline(3, argv);
 
-                REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
-                REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                }
+
+                SECTION("slot specified first")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot", "--curve", "p256"};
+
+                    auto parsed_command = parser.parse_cmdline(5, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                }
+
+                SECTION("curve specified first")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--curve", "p256", "--slot"};
+
+                    auto parsed_command = parser.parse_cmdline(5, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                }
+            }
+
+            SECTION("curve")
+            {
+                SECTION("slot specified first")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--slot", "13", "--curve"};
+
+                    auto parsed_command = parser.parse_cmdline(5, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                }
+
+                SECTION("curve specified first")
+                {
+                    const char* argv[] = {"hsmctl", "generate-key", "--curve", "--slot", "26"};
+
+                    auto parsed_command = parser.parse_cmdline(5, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
+                    REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+                }
             }
         }
 
@@ -347,6 +463,17 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(result.operation == Operation::GENERATE_KEY);
                     REQUIRE(result.error == ParseError::INVALID_VALUE);
                 }
+            }
+
+            SECTION("curve")
+            {
+                const char* argv[] = {"hsmctl", "generate-key", "--slot",
+                                      "27",     "--curve",      "invalid_curve"};
+
+                auto result = parser.parse_cmdline(6, argv);
+
+                REQUIRE(result.operation == Operation::GENERATE_KEY);
+                REQUIRE(result.error == ParseError::INVALID_VALUE);
             }
         }
     }

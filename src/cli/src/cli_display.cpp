@@ -113,11 +113,12 @@ void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
     }
 }
 
-void cli_display::generateKey(SecureElementStatus result, uint8_t slot)
+void cli_display::generateKey(SecureElementStatus result, Command command)
 {
     if (result == SecureElementStatus::OK)
     {
-        std::cout << "Key generated!\n";
+        std::cout << "Key generated in slot " << command.options["slot"] << " with "
+                  << command.options["curve"] << " curve!\n";
     }
     else
     {
@@ -129,9 +130,9 @@ void cli_display::generateKey(SecureElementStatus result, uint8_t slot)
         {
             std::cout << "could not generate key.";
             std::cout << "\n";
-            std::cout << "Slot " << static_cast<int>(slot)
+            std::cout << "Slot " << command.options["slot"]
                       << " may already contain a key. Run 'hsmctl erase-key --slot "
-                      << static_cast<int>(slot) << "' to erase it first.";
+                      << command.options["slot"] << "' to erase it first.";
             std::cout << "\n";
         }
         else if (result == SecureElementStatus::ERROR_DEINIT)

@@ -50,8 +50,23 @@ SecureElementStatus hsm_manager::eraseKey(uint8_t slot)
     return result;
 }
 
-SecureElementStatus hsm_manager::generateKey(uint8_t slot)
+SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str)
 {
+    Curve curve;
+
+    if (curve_str == "ed25519")
+    {
+        curve = Curve::ED25519;
+    }
+    else if (curve_str == "p256")
+    {
+        curve = Curve::P256;
+    }
+    else
+    {
+        return SecureElementStatus::ERROR_INVALID_CURVE;
+    }
+
     SecureElementStatus result;
 
     result = m_se.init();
@@ -61,7 +76,7 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot)
         return result;
     }
 
-    result = m_se.generateKey(slot);
+    result = m_se.generateKey(slot, curve);
 
     if (result != SecureElementStatus::OK)
     {

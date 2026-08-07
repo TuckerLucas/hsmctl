@@ -17,7 +17,7 @@ public:
 
     void status(SecureElementStatus result);
     void eraseKey(SecureElementStatus result, uint8_t slot);
-    void generateKey(SecureElementStatus result, uint8_t slot);
+    void generateKey(SecureElementStatus result, Command command);
 
     // operation specific help menu functions
     void status_help();

@@ -26,7 +26,7 @@ public:
         return eraseKeyResult;
     }
 
-    SecureElementStatus generateKey(uint8_t) override
+    SecureElementStatus generateKey(uint8_t, Curve) override
     {
         return generateKeyResult;
     }

@@ -77,9 +77,10 @@ int main(int argc, const char* argv[])
             hsm_manager hsm(se);
 
             uint8_t slot = std::stoi(command.options["slot"]);
-            SecureElementStatus result = hsm.generateKey(slot);
+            std::string curve = command.options["curve"];
+            SecureElementStatus result = hsm.generateKey(slot, curve);
 
-            display.generateKey(result, slot);
+            display.generateKey(result, command);
 
             break;
         }

@@ -96,10 +96,11 @@ SecureElementStatus SecureElement::eraseKey(uint8_t slot)
     return SecureElementStatus::OK;
 }
 
-SecureElementStatus SecureElement::generateKey(uint8_t slot)
+SecureElementStatus SecureElement::generateKey(uint8_t slot, Curve curve)
 {
-    if (lt_ecc_key_generate(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot),
-                            TR01_CURVE_ED25519) != LT_OK)
+    lt_ecc_curve_type_t lt_curve = (curve == Curve::P256) ? TR01_CURVE_P256 : TR01_CURVE_ED25519;
+
+    if (lt_ecc_key_generate(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), lt_curve) != LT_OK)
     {
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
