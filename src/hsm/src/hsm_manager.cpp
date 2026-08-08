@@ -56,7 +56,7 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
 
     if (curve_str == "ed25519")
     {
-        curve = Curve::ED25519;
+        curve = Curve::Ed25519;
     }
     else if (curve_str == "p256")
     {

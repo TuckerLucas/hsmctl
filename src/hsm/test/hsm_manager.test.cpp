@@ -94,7 +94,7 @@ TEST_CASE("generateKey")
 
     SECTION("success")
     {
-        SECTION("ED25519 curve")
+        SECTION("Ed25519 curve")
         {
             auto result = hsm.generateKey(slot, "ed25519");
 

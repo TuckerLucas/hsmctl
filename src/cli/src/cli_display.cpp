@@ -188,4 +188,5 @@ void cli_display::generateKey_help()
     std::cout << "        hsmctl generate-key --slot 3\n";
     std::cout << "        hsmctl generate-key --slot 3 --curve ed25519\n";
     std::cout << "        hsmctl generate-key --slot 3 --curve p256\n";
+    std::cout << "        hsmctl generate-key --curve p256 --slot 3\n";
 }

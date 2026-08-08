@@ -27,8 +27,7 @@ int main(int argc, const char* argv[])
         case Operation::HELP:
         {
             display.help();
-
-            break;
+            return 0;
         }
         case Operation::STATUS:
         {
@@ -45,7 +44,7 @@ int main(int argc, const char* argv[])
 
             display.status(result);
 
-            break;
+            return (result == SecureElementStatus::OK) ? 0 : 1;
         }
         case Operation::ERASE_KEY:
         {
@@ -63,7 +62,7 @@ int main(int argc, const char* argv[])
 
             display.eraseKey(result, slot);
 
-            break;
+            return (result == SecureElementStatus::OK) ? 0 : 1;
         }
         case Operation::GENERATE_KEY:
         {
@@ -82,7 +81,7 @@ int main(int argc, const char* argv[])
 
             display.generateKey(result, command);
 
-            break;
+            return (result == SecureElementStatus::OK) ? 0 : 1;
         }
         case Operation::NONE:
         default:
@@ -90,5 +89,5 @@ int main(int argc, const char* argv[])
             return 1;
     }
 
-    return 0;
+    return 1;
 }

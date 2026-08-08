@@ -232,7 +232,7 @@ TEST_CASE("cli_parser parse_cmdline")
 
             SECTION("specified curve")
             {
-                SECTION("ED25519")
+                SECTION("Ed25519")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot",
                                           "12",     "--curve",      "ed25519"};
