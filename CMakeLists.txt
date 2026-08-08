@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include(FetchContent)
 
+# ==== SQLite3 ====
+find_package(SQLite3 REQUIRED)
+
 # ==== Catch2 ====
 FetchContent_Declare(
     Catch2

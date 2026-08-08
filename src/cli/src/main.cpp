@@ -1,7 +1,10 @@
 #include "SecureElement.hpp"
+#include "audit_logger.hpp"
 #include "cli_display.hpp"
 #include "cli_parser.hpp"
 #include "hsm_manager.hpp"
+
+// TODO: Rename test names, classes and files in consistent manner
 
 int main(int argc, const char* argv[])
 {
@@ -22,6 +25,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
+    // TODO: Refactor these two lines
+    SecureElement se;
+    audit_logger logger("/home/raspberry/audit.db");  // TODO: find solution to hardcoded DB path
+    hsm_manager hsm(se, logger);
+
     switch (command.operation)
     {
         case Operation::HELP:
@@ -31,14 +39,11 @@ int main(int argc, const char* argv[])
         }
         case Operation::STATUS:
         {
-            if (command.help == true)
+            if (command.requires_help)
             {
                 display.status_help();
                 return 0;
             }
-
-            SecureElement se;
-            hsm_manager hsm(se);
 
             SecureElementStatus result = hsm.status();
 
@@ -46,16 +51,29 @@ int main(int argc, const char* argv[])
 
             return (result == SecureElementStatus::OK) ? 0 : 1;
         }
+        case Operation::LOGS:
+        {
+            if (command.requires_help)
+            {
+                display.logs_help();
+                return 0;
+            }
+
+            std::vector<AuditEntry> entries;
+
+            auto result = logger.fetch(entries);
+
+            display.logs(result, entries);
+
+            return (result == AuditStatus::OK) ? 0 : 1;
+        }
         case Operation::ERASE_KEY:
         {
-            if (command.help == true)
+            if (command.requires_help)
             {
                 display.eraseKey_help();
                 return 0;
             }
-
-            SecureElement se;
-            hsm_manager hsm(se);
 
             uint8_t slot = std::stoi(command.options["slot"]);
             SecureElementStatus result = hsm.eraseKey(slot);
@@ -66,14 +84,11 @@ int main(int argc, const char* argv[])
         }
         case Operation::GENERATE_KEY:
         {
-            if (command.help == true)
+            if (command.requires_help)
             {
                 display.generateKey_help();
                 return 0;
             }
-
-            SecureElement se;
-            hsm_manager hsm(se);
 
             uint8_t slot = std::stoi(command.options["slot"]);
             std::string curve = command.options["curve"];

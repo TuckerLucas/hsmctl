@@ -3,21 +3,10 @@
 #include <string>
 #include <unordered_map>
 
+#include "operation.hpp"
+
 #define MIN_SLOT 0
 #define MAX_SLOT 31
-
-enum class Operation
-{
-    // Global flags
-    HELP,
-
-    // Operations
-    STATUS,
-    ERASE_KEY,
-    GENERATE_KEY,
-
-    NONE,
-};
 
 enum class ParseError
 {
@@ -35,6 +24,6 @@ struct Command
 {
     Operation operation = Operation::NONE;
     std::unordered_map<std::string, std::string> options;
-    bool help = false;
+    bool requires_help = false;
     ParseError error = ParseError::NONE;
 };

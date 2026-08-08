@@ -32,7 +32,25 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
 
         if (argc == 3 && std::string(argv[2]) == "--help")
         {
-            command.help = true;
+            command.requires_help = true;
+            return command;
+        }
+
+        if (argc > 2)
+        {
+            command.error = ParseError::INVALID_OPTION;
+        }
+
+        return command;
+    }
+
+    if (operation == "logs")
+    {
+        command.operation = Operation::LOGS;
+
+        if (argc == 3 && std::string(argv[2]) == "--help")
+        {
+            command.requires_help = true;
             return command;
         }
 
@@ -67,7 +85,7 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
                     return command;
                 }
 
-                command.help = true;
+                command.requires_help = true;
                 return command;
             }
             else if (arg == "--slot")
@@ -141,7 +159,7 @@ Command cli_parser::parse_cmdline(int argc, const char* argv[])
                     return command;
                 }
 
-                command.help = true;
+                command.requires_help = true;
                 return command;
             }
             else if (arg == "--slot")

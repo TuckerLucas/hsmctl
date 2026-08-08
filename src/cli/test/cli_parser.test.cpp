@@ -60,6 +60,7 @@ TEST_CASE("cli_parser parse_cmdline")
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
             REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help == false);
         }
 
         SECTION("help")
@@ -70,7 +71,7 @@ TEST_CASE("cli_parser parse_cmdline")
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
             REQUIRE(parsed_command.error == ParseError::NONE);
-            REQUIRE(parsed_command.help == true);
+            REQUIRE(parsed_command.requires_help == true);
         }
 
         SECTION("invalid option")
@@ -80,6 +81,41 @@ TEST_CASE("cli_parser parse_cmdline")
             auto parsed_command = parser.parse_cmdline(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
+            REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+        }
+    }
+
+    SECTION("logs")
+    {
+        SECTION("success")
+        {
+            const char* argv[] = {"hsmctl", "logs"};
+
+            auto parsed_command = parser.parse_cmdline(2, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LOGS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help == false);
+        }
+
+        SECTION("help")
+        {
+            const char* argv[] = {"hsmctl", "logs", "--help"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LOGS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help == true);
+        }
+
+        SECTION("invalid option")
+        {
+            const char* argv[] = {"hsmctl", "logs", "--some-option"};
+
+            auto parsed_command = parser.parse_cmdline(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LOGS);
             REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
         }
     }
@@ -97,6 +133,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                 REQUIRE(parsed_command.options["slot"] == "2");
                 REQUIRE(parsed_command.error == ParseError::NONE);
+                REQUIRE(parsed_command.requires_help == false);
             }
 
             SECTION("boundary slots")
@@ -111,6 +148,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                     REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
 
                 SECTION("upper boundary")
@@ -123,6 +161,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                     REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
             }
         }
@@ -135,7 +174,7 @@ TEST_CASE("cli_parser parse_cmdline")
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.error == ParseError::NONE);
-            REQUIRE(parsed_command.help == true);
+            REQUIRE(parsed_command.requires_help);
         }
 
         SECTION("missing option")
@@ -228,6 +267,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 REQUIRE(parsed_command.options["slot"] == "10");
                 REQUIRE(parsed_command.options["curve"] == "ed25519");
                 REQUIRE(parsed_command.error == ParseError::NONE);
+                REQUIRE(parsed_command.requires_help == false);
             }
 
             SECTION("specified curve")
@@ -243,6 +283,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.options["slot"] == "12");
                     REQUIRE(parsed_command.options["curve"] == "ed25519");
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
 
                 SECTION("NIST P-256")
@@ -256,6 +297,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.options["slot"] == "18");
                     REQUIRE(parsed_command.options["curve"] == "p256");
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
 
                 SECTION("reversed operation order")
@@ -269,6 +311,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.options["slot"] == "16");
                     REQUIRE(parsed_command.options["curve"] == "p256");
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
             }
 
@@ -284,6 +327,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
 
                 SECTION("upper boundary")
@@ -296,6 +340,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
                     REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
                 }
             }
         }
@@ -308,7 +353,7 @@ TEST_CASE("cli_parser parse_cmdline")
 
             REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
             REQUIRE(parsed_command.error == ParseError::NONE);
-            REQUIRE(parsed_command.help == true);
+            REQUIRE(parsed_command.requires_help);
         }
 
         SECTION("missing option")

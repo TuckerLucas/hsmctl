@@ -9,7 +9,10 @@ target_include_directories(hsmctl PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(hsmctl PRIVATE hsm)
+target_link_libraries(hsmctl 
+                      PRIVATE hsm
+                      PRIVATE audit
+                      PRIVATE common)
 
 # ==== Tests ====
 add_executable(test_cli
@@ -23,6 +26,7 @@ target_include_directories(test_cli PRIVATE
 
 target_link_libraries(test_cli PRIVATE
     Catch2::Catch2WithMain
+    common
 )
 
 include(CTest)

@@ -2,12 +2,14 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "MockAuditLogger.hpp"
 #include "MockSecureElement.hpp"
 
 TEST_CASE("status")
 {
     MockSecureElement mock;
-    hsm_manager hsm(mock);
+    MockAuditLogger mock_logger;
+    hsm_manager hsm(mock, mock_logger);
 
     SECTION("success")
     {
@@ -42,12 +44,62 @@ TEST_CASE("status")
 
         REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
     }
+
+    SECTION("logging")
+    {
+        SECTION("success")
+        {
+            hsm.status();
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::STATUS);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::SUCCESS);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("init fails")
+        {
+            mock.initResult = SecureElementStatus::ERROR_INIT;
+
+            hsm.status();
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::STATUS);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("ping fails")
+        {
+            mock.pingResult = SecureElementStatus::ERROR_PING;
+
+            hsm.status();
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::STATUS);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("deinit fails")
+        {
+            mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+            hsm.status();
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::STATUS);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+    }
 }
 
 TEST_CASE("eraseKey")
 {
     MockSecureElement mock;
-    hsm_manager hsm(mock);
+    MockAuditLogger mock_logger;
+    hsm_manager hsm(mock, mock_logger);
     uint8_t slot;
 
     SECTION("success")
@@ -83,12 +135,62 @@ TEST_CASE("eraseKey")
 
         REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
     }
+
+    SECTION("logging")
+    {
+        SECTION("success")
+        {
+            hsm.eraseKey(slot);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::SUCCESS);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("init fails")
+        {
+            mock.initResult = SecureElementStatus::ERROR_INIT;
+
+            hsm.eraseKey(slot);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("eraseKey fails")
+        {
+            mock.eraseKeyResult = SecureElementStatus::ERROR_ERASE_KEY;
+
+            hsm.eraseKey(slot);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("deinit fails")
+        {
+            mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+            hsm.eraseKey(slot);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+    }
 }
 
 TEST_CASE("generateKey")
 {
     MockSecureElement mock;
-    hsm_manager hsm(mock);
+    MockAuditLogger mock_logger;
+    hsm_manager hsm(mock, mock_logger);
     uint8_t slot;
     std::string curve = "p256";
 
@@ -141,5 +243,54 @@ TEST_CASE("generateKey")
         auto result = hsm.generateKey(slot, curve);
 
         REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
+    }
+
+    SECTION("logging")
+    {
+        SECTION("success")
+        {
+            hsm.generateKey(slot, curve);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::SUCCESS);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+        }
+
+        SECTION("init fails")
+        {
+            mock.initResult = SecureElementStatus::ERROR_INIT;
+
+            hsm.generateKey(slot, curve);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+        }
+
+        SECTION("generateKey fails")
+        {
+            mock.generateKeyResult = SecureElementStatus::ERROR_GENERATE_KEY;
+
+            hsm.generateKey(slot, curve);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+        }
+
+        SECTION("deinit fails")
+        {
+            mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+            hsm.generateKey(slot, curve);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+        }
     }
 }

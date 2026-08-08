@@ -1,6 +1,6 @@
 #include "hsm_manager.hpp"
 
-hsm_manager::hsm_manager(ISecureElement& se) : m_se(se)
+hsm_manager::hsm_manager(ISecureElement& se, IAuditLogger& logger) : m_se(se), m_logger(logger)
 {
 }
 
@@ -12,6 +12,7 @@ SecureElementStatus hsm_manager::status()
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
         return result;
     }
 
@@ -19,10 +20,19 @@ SecureElementStatus hsm_manager::status()
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
         return result;
     }
 
     result = m_se.deinit();
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
+        return result;
+    }
+
+    m_logger.log(Operation::STATUS, AuditResult::SUCCESS, "");
 
     return result;
 }
@@ -35,6 +45,7 @@ SecureElementStatus hsm_manager::eraseKey(uint8_t slot)
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
         return result;
     }
 
@@ -42,10 +53,19 @@ SecureElementStatus hsm_manager::eraseKey(uint8_t slot)
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
         return result;
     }
 
     result = m_se.deinit();
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        return result;
+    }
+
+    m_logger.log(Operation::ERASE_KEY, AuditResult::SUCCESS, "slot=" + std::to_string(slot));
 
     return result;
 }
@@ -73,6 +93,8 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::GENERATE_KEY, AuditResult::FAILED,
+                     "slot=" + std::to_string(slot) + " curve=" + curve_str);
         return result;
     }
 
@@ -80,10 +102,22 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
 
     if (result != SecureElementStatus::OK)
     {
+        m_logger.log(Operation::GENERATE_KEY, AuditResult::FAILED,
+                     "slot=" + std::to_string(slot) + " curve=" + curve_str);
         return result;
     }
 
     result = m_se.deinit();
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::GENERATE_KEY, AuditResult::FAILED,
+                     "slot=" + std::to_string(slot) + " curve=" + curve_str);
+        return result;
+    }
+
+    m_logger.log(Operation::GENERATE_KEY, AuditResult::SUCCESS,
+                 "slot=" + std::to_string(slot) + " curve=" + curve_str);
 
     return result;
 }

@@ -1,5 +1,7 @@
 #include "cli_display.hpp"
 
+#include <iomanip>
+
 std::string cli_display::operationToString(Operation operation)
 {
     switch (operation)
@@ -27,13 +29,14 @@ void cli_display::help()
     std::cout << "                     --help         Show this help menu.\n";
     std::cout << "\n";
     std::cout << "        Operations:\n";
-    std::cout << "                     status         Check hardware status.\n";
+    std::cout << "                     status         Scan hardware status.\n";
+    std::cout << "                     logs           Display HSM audit logs.\n";
     std::cout << "                     erase-key      Erase a key.\n";
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
-    std::cout << "        Run 'hsmctl <operation> --help' for operation specific help.\n";
+    std::cout << "        Run 'hsmctl <operation> --help' for operation specific options.\n";
 }
 
 void cli_display::commandError(Command command)
@@ -94,6 +97,34 @@ void cli_display::status(SecureElementStatus result)
     }
 }
 
+void cli_display::logs(AuditStatus result, std::vector<AuditEntry> entries)
+{
+    if (result == AuditStatus::OK)
+    {
+        std::cout << "\n";
+        std::cout << "Audit Log\n";
+        std::cout << std::string(75, '-') << "\n";
+        std::cout << std::left << std::setw(22) << "Timestamp" << std::setw(15) << "Operation"
+                  << std::setw(10) << "Result" << std::setw(20) << "Options"
+                  << "\n";
+        std::cout << std::string(75, '-') << "\n";
+
+        for (const auto& entry : entries)
+        {
+            std::cout << std::left << std::setw(22) << entry.timestamp << std::setw(15)
+                      << entry.operation << std::setw(10) << entry.auditResult << std::setw(20)
+                      << entry.options << "\n";
+        }
+
+        std::cout << std::string(75, '-') << "\n";
+        std::cout << entries.size() << " operations logged\n\n";
+    }
+    else
+    {
+        std::cout << "Failed to retrieve logs\n";
+    }
+}
+
 void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
 {
     if (result == SecureElementStatus::OK)
@@ -150,6 +181,18 @@ void cli_display::status_help()
     std::cout << "\n";
     std::cout << "Examples:\n";
     std::cout << "        hsmctl status\n";
+}
+
+void cli_display::logs_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl logs\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "        Display audit log of all operations performed on the HSM.\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl logs\n";
 }
 
 void cli_display::eraseKey_help()

@@ -3,12 +3,13 @@
 #include <cstdint>
 #include <string>
 
+#include "IAuditLogger.hpp"
 #include "ISecureElement.hpp"
 
 class hsm_manager
 {
 public:
-    hsm_manager(ISecureElement& se);
+    hsm_manager(ISecureElement& se, IAuditLogger& logger);
 
     SecureElementStatus status();
     SecureElementStatus eraseKey(uint8_t slot);
@@ -16,4 +17,5 @@ public:
 
 private:
     ISecureElement& m_se;
+    IAuditLogger& m_logger;
 };

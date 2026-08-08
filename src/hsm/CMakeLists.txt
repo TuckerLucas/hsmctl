@@ -10,6 +10,8 @@ target_include_directories(hsm PUBLIC
 
 target_link_libraries(hsm PRIVATE
     tropic
+    audit
+    common
 )
 
 # ==== Tests ====
@@ -18,14 +20,16 @@ add_executable(test_hsm
 )
 
 target_include_directories(test_hsm PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
 target_link_libraries(test_hsm PRIVATE
     hsm
+    audit
+    common
     Catch2::Catch2WithMain
 )
 
+include(CTest)
 include(Catch)
 catch_discover_tests(test_hsm)
