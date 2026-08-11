@@ -5,7 +5,10 @@ BINARY = "../build/src/cli/hsmctl"
 def run_command(command):
     return subprocess.run(command, capture_output=True, text=True)
 
-def run_test(description, command, expected_exit_code=0, cleanup=None):
+def run_test(description, command, expected_exit_code=0, setup=None, cleanup=None):
+    if setup:
+        run_command(setup)
+
     result = run_command(command)
 
     if cleanup:
@@ -53,5 +56,28 @@ run_test("generate key with NIST P-256 curve",
 run_test("generate key with curve specified first",
          [BINARY, "generate-key", "--curve", "p256", "--slot", "3"],
          cleanup=[BINARY, "erase-key", "--slot", "3"])   
+
+run_test("generate key in occupied slot",
+         [BINARY, "generate-key", "--slot", "10"],
+         setup=[BINARY, "generate-key", "--slot", "10"],
+         cleanup=[BINARY, "erase-key", "--slot", "10"],
+         expected_exit_code=1)
+
+# Read key
+run_test("read key (help)", [BINARY, "read-key", "--help"])
+
+run_test("read key Ed25519",
+         [BINARY, "read-key", "--slot", "17"],
+         setup=[BINARY, "generate-key", "--slot", "17"],
+         cleanup=[BINARY, "erase-key", "--slot", "17"])
+
+run_test("read key P-256",
+         [BINARY, "read-key", "--slot", "25"],
+         setup=[BINARY, "generate-key", "--slot", "25", "--curve", "p256"],
+         cleanup=[BINARY, "erase-key", "--slot", "25"])
+
+run_test("read key from empty slot",
+         [BINARY, "read-key", "--slot", "10"],
+         expected_exit_code=1)
 
 print("")    

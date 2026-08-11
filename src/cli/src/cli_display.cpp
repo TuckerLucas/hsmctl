@@ -171,6 +171,51 @@ void cli_display::generateKey(SecureElementStatus result, Command command)
     }
 }
 
+void cli_display::readKey(SecureElementStatus result, uint8_t slot, std::vector<uint8_t> pubKey)
+{
+    if (result == SecureElementStatus::OK)
+    {
+        std::string curve_name = (pubKey.size() == 32) ? "Ed25519" : "P-256";
+
+        std::cout << "\n";
+        std::cout << "Public key from slot " << static_cast<int>(slot) << " (" << curve_name
+                  << "):\n";
+        std::cout << std::string(60, '-') << "\n";
+
+        for (size_t i = 0; i < pubKey.size(); i++)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0')
+                      << static_cast<int>(pubKey[i]);
+
+            if ((i + 1) % 16 == 0)
+                std::cout << "\n";
+            else
+                std::cout << " ";
+        }
+
+        std::cout << std::string(60, '-') << "\n";
+        std::cout << "Key length: " << std::dec << pubKey.size() << " bytes\n\n";
+    }
+    else
+    {
+        std::cout << "Operation failed: ";
+
+        if (result == SecureElementStatus::ERROR_INIT)
+            std::cout << "initialisation error. Check that the security module is connected.\n";
+        else if (result == SecureElementStatus::ERROR_READ_KEY)
+        {
+            std::cout << "could not read key.";
+            std::cout << "\n";
+            std::cout << "Slot " << static_cast<int>(slot)
+                      << " may be empty. Run 'hsmctl generate-key --slot " << static_cast<int>(slot)
+                      << "' to generate a key first.";
+            std::cout << "\n";
+        }
+        else if (result == SecureElementStatus::ERROR_DEINIT)
+            std::cout << "deinitialisation error.\n";
+    }
+}
+
 void cli_display::status_help()
 {
     std::cout << "Usage:\n";
@@ -232,4 +277,21 @@ void cli_display::generateKey_help()
     std::cout << "        hsmctl generate-key --slot 3 --curve ed25519\n";
     std::cout << "        hsmctl generate-key --slot 3 --curve p256\n";
     std::cout << "        hsmctl generate-key --curve p256 --slot 3\n";
+}
+
+void cli_display::readKey_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl read-key --slot <slot>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "        Reads the public key stored in the specified slot on the HSM.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --slot <" << MIN_SLOT << ", " << MAX_SLOT
+              << ">    Slot number to erase.\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl read-key --slot 2\n";
+    std::cout << "        hsmctl read-key --slot 31\n";
 }

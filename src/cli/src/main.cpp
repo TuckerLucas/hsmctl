@@ -98,6 +98,23 @@ int main(int argc, const char* argv[])
 
             return (result == SecureElementStatus::OK) ? 0 : 1;
         }
+        case Operation::READ_KEY:
+        {
+            if (command.requires_help)
+            {
+                display.readKey_help();
+                return 0;
+            }
+
+            uint8_t slot = std::stoi(command.options["slot"]);
+            std::vector<uint8_t> pubKey;
+
+            SecureElementStatus result = hsm.readKey(slot, pubKey);
+
+            display.readKey(result, slot, pubKey);
+
+            return (result == SecureElementStatus::OK) ? 0 : 1;
+        }
         case Operation::NONE:
         default:
             display.commandError(command);

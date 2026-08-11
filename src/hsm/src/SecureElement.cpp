@@ -72,7 +72,7 @@ SecureElementStatus SecureElement::ping()
 {
     uint8_t recv_buf[PING_MSG_SIZE];
 
-    if (lt_ping(&m_impl->handle, (const uint8_t *)PING_MSG, recv_buf, PING_MSG_SIZE) != LT_OK)
+    if (lt_ping(&m_impl->handle, (const uint8_t*)PING_MSG, recv_buf, PING_MSG_SIZE) != LT_OK)
     {
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
@@ -107,6 +107,29 @@ SecureElementStatus SecureElement::generateKey(uint8_t slot, Curve curve)
         mbedtls_psa_crypto_free();
         return SecureElementStatus::ERROR_GENERATE_KEY;
     }
+
+    return SecureElementStatus::OK;
+}
+
+SecureElementStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
+{
+    uint8_t raw_key[64];
+    lt_ecc_curve_type_t curve;
+    lt_ecc_key_origin_t origin;
+
+    if (lt_ecc_key_read(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), raw_key, sizeof(raw_key),
+                        &curve, &origin) != LT_OK)
+    {
+        lt_session_abort(&m_impl->handle);
+        lt_deinit(&m_impl->handle);
+        mbedtls_psa_crypto_free();
+
+        return SecureElementStatus::ERROR_READ_KEY;
+    }
+
+    int key_len = (curve == TR01_CURVE_ED25519) ? 32 : 64;
+
+    pubKey.assign(raw_key, raw_key + key_len);
 
     return SecureElementStatus::OK;
 }

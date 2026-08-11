@@ -10,6 +10,7 @@ enum class Operation
     LOGS,
     ERASE_KEY,
     GENERATE_KEY,
+    READ_KEY,
 
     NONE,
 };

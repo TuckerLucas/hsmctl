@@ -5,7 +5,7 @@
 #include "MockAuditLogger.hpp"
 #include "MockSecureElement.hpp"
 
-TEST_CASE("status")
+TEST_CASE("hardware status")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
@@ -18,7 +18,7 @@ TEST_CASE("status")
         REQUIRE(result == SecureElementStatus::OK);
     }
 
-    SECTION("init fails")
+    SECTION("initialization fails")
     {
         mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -36,7 +36,7 @@ TEST_CASE("status")
         REQUIRE(result == SecureElementStatus::ERROR_PING);
     }
 
-    SECTION("deinit fails")
+    SECTION("deinitialization fails")
     {
         mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -57,7 +57,7 @@ TEST_CASE("status")
             REQUIRE(mock_logger.lastOptions == "");
         }
 
-        SECTION("init fails")
+        SECTION("initialization fails")
         {
             mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -81,7 +81,7 @@ TEST_CASE("status")
             REQUIRE(mock_logger.lastOptions == "");
         }
 
-        SECTION("deinit fails")
+        SECTION("deinitialization fails")
         {
             mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -95,7 +95,7 @@ TEST_CASE("status")
     }
 }
 
-TEST_CASE("eraseKey")
+TEST_CASE("erase key")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
@@ -109,7 +109,7 @@ TEST_CASE("eraseKey")
         REQUIRE(result == SecureElementStatus::OK);
     }
 
-    SECTION("init fails")
+    SECTION("initialization fails")
     {
         mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -118,7 +118,7 @@ TEST_CASE("eraseKey")
         REQUIRE(result == SecureElementStatus::ERROR_INIT);
     }
 
-    SECTION("eraseKey fails")
+    SECTION("erasing key fails")
     {
         mock.eraseKeyResult = SecureElementStatus::ERROR_ERASE_KEY;
 
@@ -127,7 +127,7 @@ TEST_CASE("eraseKey")
         REQUIRE(result == SecureElementStatus::ERROR_ERASE_KEY);
     }
 
-    SECTION("deinit fails")
+    SECTION("deinitialization fails")
     {
         mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -148,7 +148,7 @@ TEST_CASE("eraseKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("init fails")
+        SECTION("initialization fails")
         {
             mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -160,7 +160,7 @@ TEST_CASE("eraseKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("eraseKey fails")
+        SECTION("erasing key fails")
         {
             mock.eraseKeyResult = SecureElementStatus::ERROR_ERASE_KEY;
 
@@ -172,7 +172,7 @@ TEST_CASE("eraseKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("deinit fails")
+        SECTION("deinitialization fails")
         {
             mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -186,7 +186,7 @@ TEST_CASE("eraseKey")
     }
 }
 
-TEST_CASE("generateKey")
+TEST_CASE("generate key")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
@@ -218,7 +218,7 @@ TEST_CASE("generateKey")
         REQUIRE(result == SecureElementStatus::ERROR_INVALID_CURVE);
     }
 
-    SECTION("init fails")
+    SECTION("initialization fails")
     {
         mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -227,7 +227,7 @@ TEST_CASE("generateKey")
         REQUIRE(result == SecureElementStatus::ERROR_INIT);
     }
 
-    SECTION("generateKey fails")
+    SECTION("generating key fails")
     {
         mock.generateKeyResult = SecureElementStatus::ERROR_GENERATE_KEY;
 
@@ -236,7 +236,7 @@ TEST_CASE("generateKey")
         REQUIRE(result == SecureElementStatus::ERROR_GENERATE_KEY);
     }
 
-    SECTION("deinit fails")
+    SECTION("deinitialization fails")
     {
         mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -257,7 +257,7 @@ TEST_CASE("generateKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
         }
 
-        SECTION("init fails")
+        SECTION("initialization fails")
         {
             mock.initResult = SecureElementStatus::ERROR_INIT;
 
@@ -269,7 +269,7 @@ TEST_CASE("generateKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
         }
 
-        SECTION("generateKey fails")
+        SECTION("generating key fails")
         {
             mock.generateKeyResult = SecureElementStatus::ERROR_GENERATE_KEY;
 
@@ -281,7 +281,7 @@ TEST_CASE("generateKey")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
         }
 
-        SECTION("deinit fails")
+        SECTION("deinitialization fails")
         {
             mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
 
@@ -291,6 +291,99 @@ TEST_CASE("generateKey")
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+        }
+    }
+}
+
+TEST_CASE("read key")
+{
+    MockSecureElement mock;
+    MockAuditLogger mock_logger;
+    hsm_manager hsm(mock, mock_logger);
+    uint8_t slot;
+    std::vector<uint8_t> pubKey;
+
+    SECTION("success")
+    {
+        auto result = hsm.readKey(slot, pubKey);
+
+        REQUIRE(pubKey == mock_public_key);
+        REQUIRE(result == SecureElementStatus::OK);
+    }
+
+    SECTION("initialization fails")
+    {
+        mock.initResult = SecureElementStatus::ERROR_INIT;
+
+        auto result = hsm.readKey(slot, pubKey);
+
+        REQUIRE(result == SecureElementStatus::ERROR_INIT);
+    }
+
+    SECTION("reading key fails")
+    {
+        mock.readKeyResult = SecureElementStatus::ERROR_READ_KEY;
+
+        auto result = hsm.readKey(slot, pubKey);
+
+        REQUIRE(result == SecureElementStatus::ERROR_READ_KEY);
+    }
+
+    SECTION("deinitialization fails")
+    {
+        mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+        auto result = hsm.readKey(slot, pubKey);
+
+        REQUIRE(result == SecureElementStatus::ERROR_DEINIT);
+    }
+
+    SECTION("logging")
+    {
+        SECTION("success")
+        {
+            hsm.readKey(slot, pubKey);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::SUCCESS);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("initialization fails")
+        {
+            mock.initResult = SecureElementStatus::ERROR_INIT;
+
+            hsm.readKey(slot, pubKey);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("read key fails")
+        {
+            mock.readKeyResult = SecureElementStatus::ERROR_READ_KEY;
+
+            hsm.readKey(slot, pubKey);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+
+        SECTION("deinitialization fails")
+        {
+            mock.deinitResult = SecureElementStatus::ERROR_DEINIT;
+
+            hsm.readKey(slot, pubKey);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
+            REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
     }
 }

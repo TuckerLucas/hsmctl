@@ -21,10 +21,12 @@ public:
     void logs(AuditStatus result, std::vector<AuditEntry> entries);
     void eraseKey(SecureElementStatus result, uint8_t slot);
     void generateKey(SecureElementStatus result, Command command);
+    void readKey(SecureElementStatus result, uint8_t slot, std::vector<uint8_t> pubKey);
 
     // operation specific help menu functions
     void status_help();
     void logs_help();
     void eraseKey_help();
     void generateKey_help();
+    void readKey_help();
 };

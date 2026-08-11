@@ -13,7 +13,7 @@ audit_logger::audit_logger(const std::string& connection_string)
 
     const char* create_table_sql =
         "CREATE TABLE IF NOT EXISTS audit_log ("
-        "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,"
+        "timestamp DATETIME DEFAULT (datetime('now', 'localtime')),"
         "operation TEXT NOT NULL,"
         "auditResult TEXT NOT NULL,"
         "options TEXT NOT NULL"
@@ -84,6 +84,9 @@ AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std:
             break;
         case Operation::GENERATE_KEY:
             op_str = "GENERATE_KEY";
+            break;
+        case Operation::READ_KEY:
+            op_str = "READ_KEY";
             break;
         default:
             // unreachable

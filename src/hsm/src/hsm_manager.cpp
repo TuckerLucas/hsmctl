@@ -74,6 +74,7 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
 {
     Curve curve;
 
+    // TODO: check if this logic should be here or in parser
     if (curve_str == "ed25519")
     {
         curve = Curve::Ed25519;
@@ -118,6 +119,39 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
 
     m_logger.log(Operation::GENERATE_KEY, AuditResult::SUCCESS,
                  "slot=" + std::to_string(slot) + " curve=" + curve_str);
+
+    return result;
+}
+
+SecureElementStatus hsm_manager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
+{
+    SecureElementStatus result;
+
+    result = m_se.init();
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        return SecureElementStatus::ERROR_INIT;
+    }
+
+    result = m_se.readKey(slot, pubKey);
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        return SecureElementStatus::ERROR_READ_KEY;
+    }
+
+    result = m_se.deinit();
+
+    if (result != SecureElementStatus::OK)
+    {
+        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        return SecureElementStatus::ERROR_DEINIT;
+    }
+
+    m_logger.log(Operation::READ_KEY, AuditResult::SUCCESS, "slot=" + std::to_string(slot));
 
     return result;
 }

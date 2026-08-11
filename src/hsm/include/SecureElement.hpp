@@ -14,6 +14,7 @@ public:
     SecureElementStatus ping() override;
     SecureElementStatus eraseKey(uint8_t slot) override;
     SecureElementStatus generateKey(uint8_t slot, Curve curve) override;
+    SecureElementStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;
     SecureElementStatus deinit() override;
 
 private:
