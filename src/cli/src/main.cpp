@@ -1,8 +1,12 @@
+#include <sys/stat.h>
+
 #include "SecureElement.hpp"
 #include "audit_logger.hpp"
 #include "cli_display.hpp"
 #include "cli_parser.hpp"
 #include "hsm_manager.hpp"
+
+std::string getDbPath();
 
 // TODO: Rename test names, classes and files in consistent manner
 
@@ -27,7 +31,7 @@ int main(int argc, const char* argv[])
 
     // TODO: Refactor these two lines
     SecureElement se;
-    audit_logger logger("/home/raspberry/audit.db");  // TODO: find solution to hardcoded DB path
+    audit_logger logger(getDbPath());
     hsm_manager hsm(se, logger);
 
     switch (command.operation)
@@ -122,4 +126,12 @@ int main(int argc, const char* argv[])
     }
 
     return 1;
+}
+
+std::string getDbPath()
+{
+    const char* home = getenv("HOME");
+    std::string dir = std::string(home) + "/.hsmctl";
+    mkdir(dir.c_str(), 0700);
+    return dir + "/audit.db";
 }
