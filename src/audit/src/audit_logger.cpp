@@ -91,7 +91,7 @@ AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std:
         default:
             // unreachable
             // TODO: decide if this is worth testing
-            assert(false && "Unhandled operation value");
+            assert(false && "Unhandled operation value in log function");
             op_str = "UNKNOWN";
             break;
     }
@@ -109,7 +109,7 @@ AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std:
         default:
             // unreachable
             // TODO: decide if this is worth testing
-            assert(false && "Unhandled audit result value");
+            assert(false && "Unhandled audit result value in log function");
             audit_res_str = "UNKNOWN";
             break;
     }

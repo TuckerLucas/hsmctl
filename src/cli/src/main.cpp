@@ -29,6 +29,12 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
+    if (command.requires_help)
+    {
+        display.operationHelpMenu(command.operation);
+        return 0;
+    }
+
     // TODO: Refactor these two lines
     SecureElement se;
     audit_logger logger(getDbPath());
@@ -43,12 +49,6 @@ int main(int argc, const char* argv[])
         }
         case Operation::STATUS:
         {
-            if (command.requires_help)
-            {
-                display.status_help();
-                return 0;
-            }
-
             SecureElementStatus result = hsm.status();
 
             display.status(result);
@@ -57,12 +57,6 @@ int main(int argc, const char* argv[])
         }
         case Operation::LOGS:
         {
-            if (command.requires_help)
-            {
-                display.logs_help();
-                return 0;
-            }
-
             std::vector<AuditEntry> entries;
 
             auto result = logger.fetch(entries);
@@ -73,12 +67,6 @@ int main(int argc, const char* argv[])
         }
         case Operation::ERASE_KEY:
         {
-            if (command.requires_help)
-            {
-                display.eraseKey_help();
-                return 0;
-            }
-
             uint8_t slot = std::stoi(command.options["slot"]);
             SecureElementStatus result = hsm.eraseKey(slot);
 
@@ -88,12 +76,6 @@ int main(int argc, const char* argv[])
         }
         case Operation::GENERATE_KEY:
         {
-            if (command.requires_help)
-            {
-                display.generateKey_help();
-                return 0;
-            }
-
             uint8_t slot = std::stoi(command.options["slot"]);
             std::string curve = command.options["curve"];
             SecureElementStatus result = hsm.generateKey(slot, curve);
@@ -104,12 +86,6 @@ int main(int argc, const char* argv[])
         }
         case Operation::READ_KEY:
         {
-            if (command.requires_help)
-            {
-                display.readKey_help();
-                return 0;
-            }
-
             uint8_t slot = std::stoi(command.options["slot"]);
             std::vector<uint8_t> pubKey;
 
@@ -134,4 +110,35 @@ std::string getDbPath()
     std::string dir = std::string(home) + "/.hsmctl";
     mkdir(dir.c_str(), 0700);
     return dir + "/audit.db";
+}
+
+bool handleHelpRequest(const Command& command, cli_display& display, Operation op)
+{
+    if (!command.requires_help)
+    {
+        return false;
+    }
+
+    switch (op)
+    {
+        case Operation::STATUS:
+            display.status_help();
+            break;
+        case Operation::LOGS:
+            display.logs_help();
+            break;
+        case Operation::ERASE_KEY:
+            display.eraseKey_help();
+            break;
+        case Operation::GENERATE_KEY:
+            display.generateKey_help();
+            break;
+        case Operation::READ_KEY:
+            display.readKey_help();
+            break;
+        default:
+            break;
+    }
+
+    return true;
 }

@@ -254,7 +254,8 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastAuditResult == AuditResult::SUCCESS);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+            REQUIRE(mock_logger.lastOptions ==
+                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("initialization fails")
@@ -266,7 +267,8 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+            REQUIRE(mock_logger.lastOptions ==
+                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("generating key fails")
@@ -278,7 +280,8 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+            REQUIRE(mock_logger.lastOptions ==
+                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("deinitialization fails")
@@ -290,7 +293,8 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastAuditResult == AuditResult::FAILED);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) + " curve=" + curve);
+            REQUIRE(mock_logger.lastOptions ==
+                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
     }
 }

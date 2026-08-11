@@ -23,6 +23,8 @@ public:
     void generateKey(SecureElementStatus result, Command command);
     void readKey(SecureElementStatus result, uint8_t slot, std::vector<uint8_t> pubKey);
 
+    void operationHelpMenu(Operation op);
+
     // operation specific help menu functions
     void status_help();
     void logs_help();

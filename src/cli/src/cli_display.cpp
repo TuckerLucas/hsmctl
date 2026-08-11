@@ -1,5 +1,6 @@
 #include "cli_display.hpp"
 
+#include <cassert>
 #include <iomanip>
 
 std::string cli_display::operationToString(Operation operation)
@@ -294,4 +295,28 @@ void cli_display::readKey_help()
     std::cout << "Examples:\n";
     std::cout << "        hsmctl read-key --slot 2\n";
     std::cout << "        hsmctl read-key --slot 31\n";
+}
+
+void cli_display::operationHelpMenu(Operation op)
+{
+    switch (op)
+    {
+        case Operation::STATUS:
+            status_help();
+            break;
+        case Operation::LOGS:
+            logs_help();
+            break;
+        case Operation::ERASE_KEY:
+            eraseKey_help();
+            break;
+        case Operation::GENERATE_KEY:
+            generateKey_help();
+            break;
+        case Operation::READ_KEY:
+            readKey_help();
+            break;
+        default:
+            assert(false && "Unhandled operation value in operationHelpMenu");
+    }
 }
