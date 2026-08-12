@@ -9,41 +9,41 @@ const std::vector<uint8_t> mock_public_key = {
 class MockSecureElement : public ISecureElement
 {
 public:
-    SecureElementStatus initResult = SecureElementStatus::OK;
-    SecureElementStatus pingResult = SecureElementStatus::OK;
-    SecureElementStatus eraseKeyResult = SecureElementStatus::OK;
-    SecureElementStatus generateKeyResult = SecureElementStatus::OK;
-    SecureElementStatus readKeyResult = SecureElementStatus::OK;
-    SecureElementStatus deinitResult = SecureElementStatus::OK;
+    SystemStatus initResult = SystemStatus::OK;
+    SystemStatus pingResult = SystemStatus::OK;
+    SystemStatus eraseKeyResult = SystemStatus::OK;
+    SystemStatus generateKeyResult = SystemStatus::OK;
+    SystemStatus readKeyResult = SystemStatus::OK;
+    SystemStatus deinitResult = SystemStatus::OK;
 
-    SecureElementStatus init() override
+    SystemStatus init() override
     {
         return initResult;
     }
 
-    SecureElementStatus ping() override
+    SystemStatus ping() override
     {
         return pingResult;
     }
 
-    SecureElementStatus eraseKey(uint8_t) override
+    SystemStatus eraseKey(uint8_t) override
     {
         return eraseKeyResult;
     }
 
-    SecureElementStatus generateKey(uint8_t, Curve) override
+    SystemStatus generateKey(uint8_t, Curve) override
     {
         return generateKeyResult;
     }
 
-    SecureElementStatus readKey(uint8_t, std::vector<uint8_t>& pubKey) override
+    SystemStatus readKey(uint8_t, std::vector<uint8_t>& pubKey) override
     {
         pubKey = mock_public_key;
 
         return readKeyResult;
     }
 
-    SecureElementStatus deinit() override
+    SystemStatus deinit() override
     {
         return deinitResult;
     }

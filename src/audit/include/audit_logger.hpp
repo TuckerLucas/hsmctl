@@ -14,8 +14,8 @@ public:
     audit_logger(const std::string& connection_string);
     ~audit_logger();
 
-    AuditStatus fetch(std::vector<AuditEntry>& entries) override;
-    AuditStatus log(Operation operation, AuditResult auditResult, std::string options) override;
+    SystemStatus fetch(std::vector<AuditEntry>& entries) override;
+    SystemStatus log(Operation operation, SystemStatus auditResult, std::string options) override;
 
 private:
     sqlite3* m_db = nullptr;

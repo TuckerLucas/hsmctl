@@ -14,7 +14,7 @@ TEST_CASE("audit_logger")
 
             auto result = logger.fetch(entries);
 
-            REQUIRE(result == AuditStatus::OK);
+            REQUIRE(result == SystemStatus::OK);
             REQUIRE(entries.size() == 0);
         }
 
@@ -24,14 +24,14 @@ TEST_CASE("audit_logger")
             {
                 SECTION("status")
                 {
-                    auto write_result = logger.log(Operation::STATUS, AuditResult::SUCCESS, "");
+                    auto write_result = logger.log(Operation::STATUS, SystemStatus::SUCCESS, "");
 
-                    REQUIRE(write_result == AuditStatus::OK);
+                    REQUIRE(write_result == SystemStatus::OK);
 
                     std::vector<AuditEntry> entries;
                     auto read_result = logger.fetch(entries);
 
-                    REQUIRE(read_result == AuditStatus::OK);
+                    REQUIRE(read_result == SystemStatus::OK);
                     REQUIRE(entries.size() == 1);
                     REQUIRE(entries[0].timestamp != "");
                     REQUIRE(entries[0].operation == "STATUS");
@@ -42,14 +42,14 @@ TEST_CASE("audit_logger")
                 SECTION("erase key")
                 {
                     auto write_result =
-                        logger.log(Operation::ERASE_KEY, AuditResult::SUCCESS, "slot=2");
+                        logger.log(Operation::ERASE_KEY, SystemStatus::SUCCESS, "slot=2");
 
-                    REQUIRE(write_result == AuditStatus::OK);
+                    REQUIRE(write_result == SystemStatus::OK);
 
                     std::vector<AuditEntry> entries;
                     auto read_result = logger.fetch(entries);
 
-                    REQUIRE(read_result == AuditStatus::OK);
+                    REQUIRE(read_result == SystemStatus::OK);
                     REQUIRE(entries.size() == 1);
                     REQUIRE(entries[0].timestamp != "");
                     REQUIRE(entries[0].operation == "ERASE_KEY");
@@ -59,15 +59,15 @@ TEST_CASE("audit_logger")
 
                 SECTION("generate key")
                 {
-                    auto write_result = logger.log(Operation::GENERATE_KEY, AuditResult::FAILED,
+                    auto write_result = logger.log(Operation::GENERATE_KEY, SystemStatus::FAILED,
                                                    "slot=2 curve=p256");
 
-                    REQUIRE(write_result == AuditStatus::OK);
+                    REQUIRE(write_result == SystemStatus::OK);
 
                     std::vector<AuditEntry> entries;
                     auto read_result = logger.fetch(entries);
 
-                    REQUIRE(read_result == AuditStatus::OK);
+                    REQUIRE(read_result == SystemStatus::OK);
                     REQUIRE(entries.size() == 1);
                     REQUIRE(entries[0].timestamp != "");
                     REQUIRE(entries[0].operation == "GENERATE_KEY");
@@ -78,21 +78,21 @@ TEST_CASE("audit_logger")
 
             SECTION("multiple entries preserve order")
             {
-                AuditStatus write_result;
+                SystemStatus write_result;
                 int n_entries = 3;
 
-                write_result = logger.log(Operation::STATUS, AuditResult::SUCCESS, "");
-                REQUIRE(write_result == AuditStatus::OK);
-                write_result = logger.log(Operation::ERASE_KEY, AuditResult::SUCCESS, "slot=6");
-                REQUIRE(write_result == AuditStatus::OK);
-                write_result = logger.log(Operation::GENERATE_KEY, AuditResult::SUCCESS,
+                write_result = logger.log(Operation::STATUS, SystemStatus::SUCCESS, "");
+                REQUIRE(write_result == SystemStatus::OK);
+                write_result = logger.log(Operation::ERASE_KEY, SystemStatus::SUCCESS, "slot=6");
+                REQUIRE(write_result == SystemStatus::OK);
+                write_result = logger.log(Operation::GENERATE_KEY, SystemStatus::SUCCESS,
                                           "slot=15 curve=ed25519");
-                REQUIRE(write_result == AuditStatus::OK);
+                REQUIRE(write_result == SystemStatus::OK);
 
                 std::vector<AuditEntry> entries;
                 auto read_result = logger.fetch(entries);
 
-                REQUIRE(read_result == AuditStatus::OK);
+                REQUIRE(read_result == SystemStatus::OK);
                 REQUIRE(entries.size() == n_entries);
 
                 REQUIRE(entries[0].timestamp != "");
@@ -123,14 +123,14 @@ TEST_CASE("audit_logger")
 
             auto result = logger.fetch(entries);
 
-            REQUIRE(result == AuditStatus::ERROR_DB);
+            REQUIRE(result == SystemStatus::ERROR_DB);
         }
 
         SECTION("writing to database fails")
         {
-            auto result = logger.log(Operation::ERASE_KEY, AuditResult::SUCCESS, "");
+            auto result = logger.log(Operation::ERASE_KEY, SystemStatus::SUCCESS, "");
 
-            REQUIRE(result == AuditStatus::ERROR_DB);
+            REQUIRE(result == SystemStatus::ERROR_DB);
         }
     }
 }

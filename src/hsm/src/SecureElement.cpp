@@ -30,11 +30,11 @@ SecureElement::SecureElement() : m_impl(std::make_unique<Impl>())
 
 SecureElement::~SecureElement() = default;
 
-SecureElementStatus SecureElement::init()
+SystemStatus SecureElement::init()
 {
     if (psa_crypto_init() != PSA_SUCCESS)
     {
-        return SecureElementStatus::ERROR_INIT;
+        return SystemStatus::ERROR_INIT;
     }
 
     snprintf(m_impl->device.spi_dev, sizeof(m_impl->device.spi_dev), "/dev/spidev0.0");
@@ -47,14 +47,14 @@ SecureElementStatus SecureElement::init()
 
     if (lt_init(&m_impl->handle) != LT_OK)
     {
-        return SecureElementStatus::ERROR_INIT;
+        return SystemStatus::ERROR_INIT;
     }
 
     if (lt_reboot(&m_impl->handle, TR01_REBOOT) != LT_OK)
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_INIT;
+        return SystemStatus::ERROR_INIT;
     }
 
     if (lt_verify_chip_and_start_secure_session(&m_impl->handle, lt_sh0priv_prod0, lt_sh0pub_prod0,
@@ -62,13 +62,13 @@ SecureElementStatus SecureElement::init()
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_INIT;
+        return SystemStatus::ERROR_INIT;
     }
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }
 
-SecureElementStatus SecureElement::ping()
+SystemStatus SecureElement::ping()
 {
     uint8_t recv_buf[PING_MSG_SIZE];
 
@@ -77,26 +77,26 @@ SecureElementStatus SecureElement::ping()
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_PING;
+        return SystemStatus::ERROR_PING;
     }
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }
 
-SecureElementStatus SecureElement::eraseKey(uint8_t slot)
+SystemStatus SecureElement::eraseKey(uint8_t slot)
 {
     if (lt_ecc_key_erase(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot)) != LT_OK)
     {
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_ERASE_KEY;
+        return SystemStatus::ERROR_ERASE_KEY;
     }
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }
 
-SecureElementStatus SecureElement::generateKey(uint8_t slot, Curve curve)
+SystemStatus SecureElement::generateKey(uint8_t slot, Curve curve)
 {
     lt_ecc_curve_type_t lt_curve = (curve == Curve::P256) ? TR01_CURVE_P256 : TR01_CURVE_ED25519;
 
@@ -105,13 +105,13 @@ SecureElementStatus SecureElement::generateKey(uint8_t slot, Curve curve)
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_GENERATE_KEY;
+        return SystemStatus::ERROR_GENERATE_KEY;
     }
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }
 
-SecureElementStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
+SystemStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 {
     uint8_t raw_key[64];
     lt_ecc_curve_type_t curve;
@@ -124,32 +124,32 @@ SecureElementStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& p
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
 
-        return SecureElementStatus::ERROR_READ_KEY;
+        return SystemStatus::ERROR_READ_KEY;
     }
 
     int key_len = (curve == TR01_CURVE_ED25519) ? 32 : 64;
 
     pubKey.assign(raw_key, raw_key + key_len);
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }
 
-SecureElementStatus SecureElement::deinit()
+SystemStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_DEINIT;
+        return SystemStatus::ERROR_DEINIT;
     }
 
     if (lt_deinit(&m_impl->handle) != LT_OK)
     {
         mbedtls_psa_crypto_free();
-        return SecureElementStatus::ERROR_DEINIT;
+        return SystemStatus::ERROR_DEINIT;
     }
 
     mbedtls_psa_crypto_free();
 
-    return SecureElementStatus::OK;
+    return SystemStatus::OK;
 }

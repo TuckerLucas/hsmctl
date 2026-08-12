@@ -4,73 +4,73 @@ hsm_manager::hsm_manager(ISecureElement& se, IAuditLogger& logger) : m_se(se), m
 {
 }
 
-SecureElementStatus hsm_manager::status()
+SystemStatus hsm_manager::status()
 {
-    SecureElementStatus result;
+    SystemStatus result;
 
     result = m_se.init();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
+        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
         return result;
     }
 
     result = m_se.ping();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
+        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::STATUS, AuditResult::FAILED, "");
+        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
         return result;
     }
 
-    m_logger.log(Operation::STATUS, AuditResult::SUCCESS, "");
+    m_logger.log(Operation::STATUS, SystemStatus::SUCCESS, "");
 
     return result;
 }
 
-SecureElementStatus hsm_manager::eraseKey(uint8_t slot)
+SystemStatus hsm_manager::eraseKey(uint8_t slot)
 {
-    SecureElementStatus result;
+    SystemStatus result;
 
     result = m_se.init();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
         return result;
     }
 
     result = m_se.eraseKey(slot);
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::ERASE_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
         return result;
     }
 
-    m_logger.log(Operation::ERASE_KEY, AuditResult::SUCCESS, "slot=" + std::to_string(slot));
+    m_logger.log(Operation::ERASE_KEY, SystemStatus::SUCCESS, "slot=" + std::to_string(slot));
 
     return result;
 }
 
-SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str)
+SystemStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str)
 {
     Curve curve;
 
@@ -85,76 +85,76 @@ SecureElementStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str
     }
     else
     {
-        return SecureElementStatus::ERROR_INVALID_CURVE;
+        return SystemStatus::ERROR_INVALID_CURVE;
     }
 
-    SecureElementStatus result;
+    SystemStatus result;
 
     result = m_se.init();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
         m_logger.log(
-            Operation::GENERATE_KEY, AuditResult::FAILED,
+            Operation::GENERATE_KEY, SystemStatus::FAILED,
             "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
         return result;
     }
 
     result = m_se.generateKey(slot, curve);
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
         m_logger.log(
-            Operation::GENERATE_KEY, AuditResult::FAILED,
+            Operation::GENERATE_KEY, SystemStatus::FAILED,
             "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
         m_logger.log(
-            Operation::GENERATE_KEY, AuditResult::FAILED,
+            Operation::GENERATE_KEY, SystemStatus::FAILED,
             "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
         return result;
     }
 
-    m_logger.log(Operation::GENERATE_KEY, AuditResult::SUCCESS,
+    m_logger.log(Operation::GENERATE_KEY, SystemStatus::SUCCESS,
                  "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
 
     return result;
 }
 
-SecureElementStatus hsm_manager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
+SystemStatus hsm_manager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 {
-    SecureElementStatus result;
+    SystemStatus result;
 
     result = m_se.init();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
-        return SecureElementStatus::ERROR_INIT;
+        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
+        return SystemStatus::ERROR_INIT;
     }
 
     result = m_se.readKey(slot, pubKey);
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
-        return SecureElementStatus::ERROR_READ_KEY;
+        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
+        return SystemStatus::ERROR_READ_KEY;
     }
 
     result = m_se.deinit();
 
-    if (result != SecureElementStatus::OK)
+    if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, AuditResult::FAILED, "slot=" + std::to_string(slot));
-        return SecureElementStatus::ERROR_DEINIT;
+        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
+        return SystemStatus::ERROR_DEINIT;
     }
 
-    m_logger.log(Operation::READ_KEY, AuditResult::SUCCESS, "slot=" + std::to_string(slot));
+    m_logger.log(Operation::READ_KEY, SystemStatus::SUCCESS, "slot=" + std::to_string(slot));
 
     return result;
 }

@@ -3,7 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-TEST_CASE("cli_parser parse_cmdline")
+TEST_CASE("cli_parser parseCommand")
 {
     cli_parser parser;
 
@@ -11,7 +11,7 @@ TEST_CASE("cli_parser parse_cmdline")
     {
         const char* argv[] = {"hsmctl"};
 
-        auto parsed_command = parser.parse_cmdline(1, argv);
+        auto parsed_command = parser.parseCommand(1, argv);
 
         REQUIRE(parsed_command.operation == Operation::NONE);
         REQUIRE(parsed_command.error == ParseError::MISSING_OPERATION);
@@ -21,7 +21,7 @@ TEST_CASE("cli_parser parse_cmdline")
     {
         const char* argv[] = {"hsmctl", "invalid-operation"};
 
-        auto result = parser.parse_cmdline(2, argv);
+        auto result = parser.parseCommand(2, argv);
 
         REQUIRE(result.operation == Operation::NONE);
         REQUIRE(result.error == ParseError::INVALID_OPERATION);
@@ -33,7 +33,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "--help"};
 
-            auto parsed_command = parser.parse_cmdline(2, argv);
+            auto parsed_command = parser.parseCommand(2, argv);
 
             REQUIRE(parsed_command.operation == Operation::HELP);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -43,7 +43,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "--help", "--some-option"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::HELP);
             REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -56,7 +56,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "status"};
 
-            auto parsed_command = parser.parse_cmdline(2, argv);
+            auto parsed_command = parser.parseCommand(2, argv);
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -67,7 +67,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "status", "--help"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -78,7 +78,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "status", "--some-option"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::STATUS);
             REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -91,7 +91,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "logs"};
 
-            auto parsed_command = parser.parse_cmdline(2, argv);
+            auto parsed_command = parser.parseCommand(2, argv);
 
             REQUIRE(parsed_command.operation == Operation::LOGS);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -102,7 +102,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "logs", "--help"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::LOGS);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -113,7 +113,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "logs", "--some-option"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::LOGS);
             REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -128,7 +128,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "2"};
 
-                auto parsed_command = parser.parse_cmdline(4, argv);
+                auto parsed_command = parser.parseCommand(4, argv);
 
                 REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                 REQUIRE(parsed_command.options["slot"] == "2");
@@ -143,7 +143,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     std::string min_slot_str = std::to_string(MIN_SLOT);
                     const char* argv[] = {"hsmctl", "erase-key", "--slot", min_slot_str.c_str()};
 
-                    auto parsed_command = parser.parse_cmdline(4, argv);
+                    auto parsed_command = parser.parseCommand(4, argv);
 
                     REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                     REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
@@ -156,7 +156,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     std::string max_slot_str = std::to_string(MAX_SLOT);
                     const char* argv[] = {"hsmctl", "erase-key", "--slot", max_slot_str.c_str()};
 
-                    auto parsed_command = parser.parse_cmdline(4, argv);
+                    auto parsed_command = parser.parseCommand(4, argv);
 
                     REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                     REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
@@ -170,7 +170,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "erase-key", "--help"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -181,7 +181,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "erase-key"};
 
-            auto parsed_command = parser.parse_cmdline(2, argv);
+            auto parsed_command = parser.parseCommand(2, argv);
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
@@ -193,7 +193,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--invalid-option"};
 
-                auto parsed_command = parser.parse_cmdline(3, argv);
+                auto parsed_command = parser.parseCommand(3, argv);
 
                 REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -202,7 +202,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "0", "garbage"};
 
-                auto parsed_command = parser.parse_cmdline(5, argv);
+                auto parsed_command = parser.parseCommand(5, argv);
 
                 REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -212,7 +212,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "3", "--slot", "14"};
 
-                auto parsed_command = parser.parse_cmdline(6, argv);
+                auto parsed_command = parser.parseCommand(6, argv);
 
                 REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -223,7 +223,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "erase-key", "--slot"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::ERASE_KEY);
             REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -235,7 +235,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "NaN"};
 
-                auto result = parser.parse_cmdline(4, argv);
+                auto result = parser.parseCommand(4, argv);
 
                 REQUIRE(result.operation == Operation::ERASE_KEY);
                 REQUIRE(result.error == ParseError::INVALID_VALUE);
@@ -245,7 +245,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "erase-key", "--slot", "32"};
 
-                auto result = parser.parse_cmdline(4, argv);
+                auto result = parser.parseCommand(4, argv);
 
                 REQUIRE(result.operation == Operation::ERASE_KEY);
                 REQUIRE(result.error == ParseError::INVALID_VALUE);
@@ -261,7 +261,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--slot", "10"};
 
-                auto parsed_command = parser.parse_cmdline(4, argv);
+                auto parsed_command = parser.parseCommand(4, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.options["slot"] == "10");
@@ -277,7 +277,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     const char* argv[] = {"hsmctl", "generate-key", "--slot",
                                           "12",     "--curve",      "ed25519"};
 
-                    auto parsed_command = parser.parse_cmdline(6, argv);
+                    auto parsed_command = parser.parseCommand(6, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == "12");
@@ -291,7 +291,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     const char* argv[] = {"hsmctl", "generate-key", "--slot",
                                           "18",     "--curve",      "p256"};
 
-                    auto parsed_command = parser.parse_cmdline(6, argv);
+                    auto parsed_command = parser.parseCommand(6, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == "18");
@@ -305,7 +305,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     const char* argv[] = {"hsmctl", "generate-key", "--curve",
                                           "p256",   "--slot",       "16"};
 
-                    auto parsed_command = parser.parse_cmdline(6, argv);
+                    auto parsed_command = parser.parseCommand(6, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == "16");
@@ -322,7 +322,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     std::string min_slot_str = std::to_string(MIN_SLOT);
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", min_slot_str.c_str()};
 
-                    auto parsed_command = parser.parse_cmdline(4, argv);
+                    auto parsed_command = parser.parseCommand(4, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
@@ -335,7 +335,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     std::string max_slot_str = std::to_string(MAX_SLOT);
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", max_slot_str.c_str()};
 
-                    auto parsed_command = parser.parse_cmdline(4, argv);
+                    auto parsed_command = parser.parseCommand(4, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
@@ -349,7 +349,7 @@ TEST_CASE("cli_parser parse_cmdline")
         {
             const char* argv[] = {"hsmctl", "generate-key", "--help"};
 
-            auto parsed_command = parser.parse_cmdline(3, argv);
+            auto parsed_command = parser.parseCommand(3, argv);
 
             REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
             REQUIRE(parsed_command.error == ParseError::NONE);
@@ -362,7 +362,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "generate-key"};
 
-                auto parsed_command = parser.parse_cmdline(2, argv);
+                auto parsed_command = parser.parseCommand(2, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
@@ -372,7 +372,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--curve", "p256"};
 
-                auto parsed_command = parser.parse_cmdline(4, argv);
+                auto parsed_command = parser.parseCommand(4, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
@@ -385,7 +385,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--invalid-option"};
 
-                auto parsed_command = parser.parse_cmdline(3, argv);
+                auto parsed_command = parser.parseCommand(3, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -395,7 +395,7 @@ TEST_CASE("cli_parser parse_cmdline")
             {
                 const char* argv[] = {"hsmctl", "generate-key", "--slot", "0", "garbage"};
 
-                auto parsed_command = parser.parse_cmdline(5, argv);
+                auto parsed_command = parser.parseCommand(5, argv);
 
                 REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                 REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -407,7 +407,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", "3", "--slot", "14"};
 
-                    auto parsed_command = parser.parse_cmdline(6, argv);
+                    auto parsed_command = parser.parseCommand(6, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -418,7 +418,7 @@ TEST_CASE("cli_parser parse_cmdline")
                     const char* argv[] = {"hsmctl",  "generate-key", "--slot",  "3",
                                           "--curve", "ed25519",      "--curve", "p256"};
 
-                    auto parsed_command = parser.parse_cmdline(8, argv);
+                    auto parsed_command = parser.parseCommand(8, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
@@ -434,7 +434,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot"};
 
-                    auto parsed_command = parser.parse_cmdline(3, argv);
+                    auto parsed_command = parser.parseCommand(3, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -444,7 +444,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", "--curve", "p256"};
 
-                    auto parsed_command = parser.parse_cmdline(5, argv);
+                    auto parsed_command = parser.parseCommand(5, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -454,7 +454,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--curve", "p256", "--slot"};
 
-                    auto parsed_command = parser.parse_cmdline(5, argv);
+                    auto parsed_command = parser.parseCommand(5, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -467,7 +467,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", "13", "--curve"};
 
-                    auto parsed_command = parser.parse_cmdline(5, argv);
+                    auto parsed_command = parser.parseCommand(5, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -477,7 +477,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--curve", "--slot", "26"};
 
-                    auto parsed_command = parser.parse_cmdline(5, argv);
+                    auto parsed_command = parser.parseCommand(5, argv);
 
                     REQUIRE(parsed_command.operation == Operation::GENERATE_KEY);
                     REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
@@ -493,7 +493,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", "NaN"};
 
-                    auto result = parser.parse_cmdline(4, argv);
+                    auto result = parser.parseCommand(4, argv);
 
                     REQUIRE(result.operation == Operation::GENERATE_KEY);
                     REQUIRE(result.error == ParseError::INVALID_VALUE);
@@ -503,7 +503,7 @@ TEST_CASE("cli_parser parse_cmdline")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot", "32"};
 
-                    auto result = parser.parse_cmdline(4, argv);
+                    auto result = parser.parseCommand(4, argv);
 
                     REQUIRE(result.operation == Operation::GENERATE_KEY);
                     REQUIRE(result.error == ParseError::INVALID_VALUE);
@@ -515,9 +515,142 @@ TEST_CASE("cli_parser parse_cmdline")
                 const char* argv[] = {"hsmctl", "generate-key", "--slot",
                                       "27",     "--curve",      "invalid_curve"};
 
-                auto result = parser.parse_cmdline(6, argv);
+                auto result = parser.parseCommand(6, argv);
 
                 REQUIRE(result.operation == Operation::GENERATE_KEY);
+                REQUIRE(result.error == ParseError::INVALID_VALUE);
+            }
+        }
+    }
+
+    SECTION("read-key")
+    {
+        SECTION("success")
+        {
+            SECTION("non-boundary slot")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--slot", "2"};
+
+                auto parsed_command = parser.parseCommand(4, argv);
+
+                REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                REQUIRE(parsed_command.options["slot"] == "2");
+                REQUIRE(parsed_command.error == ParseError::NONE);
+                REQUIRE(parsed_command.requires_help == false);
+            }
+
+            SECTION("boundary slots")
+            {
+                SECTION("lower boundary")
+                {
+                    std::string min_slot_str = std::to_string(MIN_SLOT);
+                    const char* argv[] = {"hsmctl", "read-key", "--slot", min_slot_str.c_str()};
+
+                    auto parsed_command = parser.parseCommand(4, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                    REQUIRE(parsed_command.options["slot"] == min_slot_str.c_str());
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
+                }
+
+                SECTION("upper boundary")
+                {
+                    std::string max_slot_str = std::to_string(MAX_SLOT);
+                    const char* argv[] = {"hsmctl", "read-key", "--slot", max_slot_str.c_str()};
+
+                    auto parsed_command = parser.parseCommand(4, argv);
+
+                    REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                    REQUIRE(parsed_command.options["slot"] == max_slot_str.c_str());
+                    REQUIRE(parsed_command.error == ParseError::NONE);
+                    REQUIRE(parsed_command.requires_help == false);
+                }
+            }
+        }
+
+        SECTION("help")
+        {
+            const char* argv[] = {"hsmctl", "read-key", "--help"};
+
+            auto parsed_command = parser.parseCommand(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::READ_KEY);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help);
+        }
+
+        SECTION("missing option")
+        {
+            const char* argv[] = {"hsmctl", "read-key"};
+
+            auto parsed_command = parser.parseCommand(2, argv);
+
+            REQUIRE(parsed_command.operation == Operation::READ_KEY);
+            REQUIRE(parsed_command.error == ParseError::MISSING_OPTION);
+        }
+
+        SECTION("invalid option")
+        {
+            SECTION("unknown option")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--invalid-option"};
+
+                auto parsed_command = parser.parseCommand(3, argv);
+
+                REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+            SECTION("trailing garbage after valid command")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--slot", "0", "garbage"};
+
+                auto parsed_command = parser.parseCommand(5, argv);
+
+                REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+
+            SECTION("duplicate slot")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--slot", "3", "--slot", "14"};
+
+                auto parsed_command = parser.parseCommand(6, argv);
+
+                REQUIRE(parsed_command.operation == Operation::READ_KEY);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+        }
+
+        SECTION("missing slot value")
+        {
+            const char* argv[] = {"hsmctl", "read-key", "--slot"};
+
+            auto parsed_command = parser.parseCommand(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::READ_KEY);
+            REQUIRE(parsed_command.error == ParseError::MISSING_VALUE);
+        }
+
+        SECTION("invalid slot value")
+        {
+            SECTION("not a number")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--slot", "NaN"};
+
+                auto result = parser.parseCommand(4, argv);
+
+                REQUIRE(result.operation == Operation::READ_KEY);
+                REQUIRE(result.error == ParseError::INVALID_VALUE);
+            }
+
+            SECTION("out of boundaries")
+            {
+                const char* argv[] = {"hsmctl", "read-key", "--slot", "32"};
+
+                auto result = parser.parseCommand(4, argv);
+
+                REQUIRE(result.operation == Operation::READ_KEY);
                 REQUIRE(result.error == ParseError::INVALID_VALUE);
             }
         }

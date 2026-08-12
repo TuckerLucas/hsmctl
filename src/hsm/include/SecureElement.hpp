@@ -10,12 +10,12 @@ public:
     SecureElement();
     ~SecureElement();
 
-    SecureElementStatus init() override;
-    SecureElementStatus ping() override;
-    SecureElementStatus eraseKey(uint8_t slot) override;
-    SecureElementStatus generateKey(uint8_t slot, Curve curve) override;
-    SecureElementStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;
-    SecureElementStatus deinit() override;
+    SystemStatus init() override;
+    SystemStatus ping() override;
+    SystemStatus eraseKey(uint8_t slot) override;
+    SystemStatus generateKey(uint8_t slot, Curve curve) override;
+    SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;
+    SystemStatus deinit() override;
 
 private:
     struct Impl;

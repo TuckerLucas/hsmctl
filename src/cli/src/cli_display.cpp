@@ -9,16 +9,20 @@ std::string cli_display::operationToString(Operation operation)
     {
         case Operation::STATUS:
             return "status";
+        case Operation::LOGS:
+            return "logs";
         case Operation::ERASE_KEY:
             return "erase-key";
         case Operation::GENERATE_KEY:
             return "generate-key";
+        case Operation::READ_KEY:
+            return "read-key";
         default:
             return "unknown";
     }
 }
 
-void cli_display::help()
+void cli_display::helpMenu()
 {
     std::cout << "hsmctl <operation> [options]\n";
     std::cout << "\n";
@@ -57,7 +61,7 @@ void cli_display::commandError(Command command)
         }
         case ParseError::MISSING_OPTION:
         {
-            std::cout << operationToString(command.operation) << ": needs an option.\n";
+            std::cout << operationToString(command.operation) << ": missing an option.\n";
             break;
         }
         case ParseError::INVALID_OPTION:
@@ -67,21 +71,20 @@ void cli_display::commandError(Command command)
         }
         case ParseError::MISSING_VALUE:
         {
-            std::cout << operationToString(command.operation) << " --slot: needs a value.\n";
+            std::cout << operationToString(command.operation) << ": missing option value.\n";
             break;
         }
         case ParseError::INVALID_VALUE:
         {
-            std::cout << operationToString(command.operation) << " --slot: supported slots are ["
-                      << MIN_SLOT << ", " << MAX_SLOT << "].\n";
+            std::cout << operationToString(command.operation) << ": invalid value.\n";
             break;
         }
     }
 }
 
-void cli_display::status(SecureElementStatus result)
+void cli_display::statusResult(SystemStatus result)
 {
-    if (result == SecureElementStatus::OK)
+    if (result == SystemStatus::OK)
     {
         std::cout << "Hardware detected!\n";
     }
@@ -89,18 +92,18 @@ void cli_display::status(SecureElementStatus result)
     {
         std::cout << "Could not detect hardware: ";
 
-        if (result == SecureElementStatus::ERROR_INIT)
+        if (result == SystemStatus::ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SecureElementStatus::ERROR_PING)
+        else if (result == SystemStatus::ERROR_PING)
             std::cout << "ping failed. Check that the security module is connected.\n";
-        else if (result == SecureElementStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
 
-void cli_display::logs(AuditStatus result, std::vector<AuditEntry> entries)
+void cli_display::logsResult(SystemStatus result, std::vector<AuditEntry> entries)
 {
-    if (result == AuditStatus::OK)
+    if (result == SystemStatus::OK)
     {
         std::cout << "\n";
         std::cout << "Audit Log\n";
@@ -126,9 +129,9 @@ void cli_display::logs(AuditStatus result, std::vector<AuditEntry> entries)
     }
 }
 
-void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
+void cli_display::eraseKeyResult(SystemStatus result, uint8_t slot)
 {
-    if (result == SecureElementStatus::OK)
+    if (result == SystemStatus::OK)
     {
         std::cout << "Key erased from slot " << static_cast<int>(slot) << "!\n";
     }
@@ -136,18 +139,18 @@ void cli_display::eraseKey(SecureElementStatus result, uint8_t slot)
     {
         std::cout << "Operation failed: ";
 
-        if (result == SecureElementStatus::ERROR_INIT)
+        if (result == SystemStatus::ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SecureElementStatus::ERROR_ERASE_KEY)
+        else if (result == SystemStatus::ERROR_ERASE_KEY)
             std::cout << "could not erase key.\n";
-        else if (result == SecureElementStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
 
-void cli_display::generateKey(SecureElementStatus result, Command command)
+void cli_display::generateKeyResult(SystemStatus result, Command command)
 {
-    if (result == SecureElementStatus::OK)
+    if (result == SystemStatus::OK)
     {
         std::cout << "Key generated in slot " << command.options["slot"] << " with "
                   << command.options["curve"] << " curve!\n";
@@ -156,9 +159,9 @@ void cli_display::generateKey(SecureElementStatus result, Command command)
     {
         std::cout << "Operation failed: ";
 
-        if (result == SecureElementStatus::ERROR_INIT)
+        if (result == SystemStatus::ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SecureElementStatus::ERROR_GENERATE_KEY)
+        else if (result == SystemStatus::ERROR_GENERATE_KEY)
         {
             std::cout << "could not generate key.";
             std::cout << "\n";
@@ -167,14 +170,14 @@ void cli_display::generateKey(SecureElementStatus result, Command command)
                       << command.options["slot"] << "' to erase it first.";
             std::cout << "\n";
         }
-        else if (result == SecureElementStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
 
-void cli_display::readKey(SecureElementStatus result, uint8_t slot, std::vector<uint8_t> pubKey)
+void cli_display::readKeyResult(SystemStatus result, uint8_t slot, std::vector<uint8_t> pubKey)
 {
-    if (result == SecureElementStatus::OK)
+    if (result == SystemStatus::OK)
     {
         std::string curve_name = (pubKey.size() == 32) ? "Ed25519" : "P-256";
 
@@ -201,9 +204,9 @@ void cli_display::readKey(SecureElementStatus result, uint8_t slot, std::vector<
     {
         std::cout << "Operation failed: ";
 
-        if (result == SecureElementStatus::ERROR_INIT)
+        if (result == SystemStatus::ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SecureElementStatus::ERROR_READ_KEY)
+        else if (result == SystemStatus::ERROR_READ_KEY)
         {
             std::cout << "could not read key.";
             std::cout << "\n";
@@ -212,7 +215,7 @@ void cli_display::readKey(SecureElementStatus result, uint8_t slot, std::vector<
                       << "' to generate a key first.";
             std::cout << "\n";
         }
-        else if (result == SecureElementStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }

@@ -34,11 +34,11 @@ audit_logger::~audit_logger()
     }
 }
 
-AuditStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
+SystemStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
 {
     if (!m_db)
     {
-        return AuditStatus::ERROR_DB;
+        return SystemStatus::ERROR_DB;
     }
 
     const char* sql = "SELECT timestamp, operation, auditResult, options FROM audit_log;";
@@ -47,7 +47,7 @@ AuditStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK)
     {
         // TODO: Implement database mock to test this line
-        return AuditStatus::ERROR_DB_READ;
+        return SystemStatus::ERROR_DB_READ;
     }
 
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -62,14 +62,14 @@ AuditStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
 
     sqlite3_finalize(stmt);
 
-    return AuditStatus::OK;
+    return SystemStatus::OK;
 }
 
-AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std::string options)
+SystemStatus audit_logger::log(Operation operation, SystemStatus auditResult, std::string options)
 {
     if (!m_db)
     {
-        return AuditStatus::ERROR_DB;
+        return SystemStatus::ERROR_DB;
     }
 
     std::string op_str;
@@ -100,10 +100,10 @@ AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std:
 
     switch (auditResult)
     {
-        case AuditResult::SUCCESS:
+        case SystemStatus::SUCCESS:
             audit_res_str = "SUCCESS";
             break;
-        case AuditResult::FAILED:
+        case SystemStatus::FAILED:
             audit_res_str = "FAILED";
             break;
         default:
@@ -120,8 +120,8 @@ AuditStatus audit_logger::log(Operation operation, AuditResult auditResult, std:
     if (sqlite3_exec(m_db, sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
     {
         // TODO: Implement database mock to test this line
-        return AuditStatus::ERROR_DB_WRITE;
+        return SystemStatus::ERROR_DB_WRITE;
     }
 
-    return AuditStatus::OK;
+    return SystemStatus::OK;
 }

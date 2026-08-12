@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Command cli_parser::parse_cmdline(int argc, const char* argv[])
+Command cli_parser::parseCommand(int argc, const char* argv[])
 {
     Command command;
 

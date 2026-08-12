@@ -13,15 +13,8 @@ std::string getDbPath();
 int main(int argc, const char* argv[])
 {
     cli_display display;
-
-    if (argc < 2)
-    {
-        display.help();
-        return 0;
-    }
-
     cli_parser parser;
-    Command command = parser.parse_cmdline(argc, argv);
+    Command command = parser.parseCommand(argc, argv);
 
     if (command.error != ParseError::NONE)
     {
@@ -35,65 +28,68 @@ int main(int argc, const char* argv[])
         return 0;
     }
 
-    // TODO: Refactor these two lines
     SecureElement se;
     audit_logger logger(getDbPath());
     hsm_manager hsm(se, logger);
+
+    SystemStatus result;
 
     switch (command.operation)
     {
         case Operation::HELP:
         {
-            display.help();
+            display.helpMenu();
             return 0;
         }
         case Operation::STATUS:
         {
-            SecureElementStatus result = hsm.status();
+            result = hsm.status();
 
-            display.status(result);
+            display.statusResult(result);
 
-            return (result == SecureElementStatus::OK) ? 0 : 1;
+            break;
         }
         case Operation::LOGS:
         {
             std::vector<AuditEntry> entries;
 
-            auto result = logger.fetch(entries);
+            result = logger.fetch(entries);
 
-            display.logs(result, entries);
+            display.logsResult(result, entries);
 
-            return (result == AuditStatus::OK) ? 0 : 1;
+            break;
         }
         case Operation::ERASE_KEY:
         {
             uint8_t slot = std::stoi(command.options["slot"]);
-            SecureElementStatus result = hsm.eraseKey(slot);
 
-            display.eraseKey(result, slot);
+            result = hsm.eraseKey(slot);
 
-            return (result == SecureElementStatus::OK) ? 0 : 1;
+            display.eraseKeyResult(result, slot);
+
+            break;
         }
         case Operation::GENERATE_KEY:
         {
             uint8_t slot = std::stoi(command.options["slot"]);
             std::string curve = command.options["curve"];
-            SecureElementStatus result = hsm.generateKey(slot, curve);
 
-            display.generateKey(result, command);
+            result = hsm.generateKey(slot, curve);
 
-            return (result == SecureElementStatus::OK) ? 0 : 1;
+            display.generateKeyResult(result, command);
+
+            break;
         }
         case Operation::READ_KEY:
         {
             uint8_t slot = std::stoi(command.options["slot"]);
             std::vector<uint8_t> pubKey;
 
-            SecureElementStatus result = hsm.readKey(slot, pubKey);
+            result = hsm.readKey(slot, pubKey);
 
-            display.readKey(result, slot, pubKey);
+            display.readKeyResult(result, slot, pubKey);
 
-            return (result == SecureElementStatus::OK) ? 0 : 1;
+            break;
         }
         case Operation::NONE:
         default:
@@ -101,7 +97,7 @@ int main(int argc, const char* argv[])
             return 1;
     }
 
-    return 1;
+    return (result == SystemStatus::OK) ? 0 : 1;
 }
 
 std::string getDbPath()
@@ -110,35 +106,4 @@ std::string getDbPath()
     std::string dir = std::string(home) + "/.hsmctl";
     mkdir(dir.c_str(), 0700);
     return dir + "/audit.db";
-}
-
-bool handleHelpRequest(const Command& command, cli_display& display, Operation op)
-{
-    if (!command.requires_help)
-    {
-        return false;
-    }
-
-    switch (op)
-    {
-        case Operation::STATUS:
-            display.status_help();
-            break;
-        case Operation::LOGS:
-            display.logs_help();
-            break;
-        case Operation::ERASE_KEY:
-            display.eraseKey_help();
-            break;
-        case Operation::GENERATE_KEY:
-            display.generateKey_help();
-            break;
-        case Operation::READ_KEY:
-            display.readKey_help();
-            break;
-        default:
-            break;
-    }
-
-    return true;
 }

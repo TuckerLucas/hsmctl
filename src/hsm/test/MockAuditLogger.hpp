@@ -7,24 +7,24 @@
 class MockAuditLogger : public IAuditLogger
 {
 public:
-    AuditStatus fetchResult = AuditStatus::OK;
-    AuditStatus logResult = AuditStatus::OK;
+    SystemStatus fetchResult = SystemStatus::OK;
+    SystemStatus logResult = SystemStatus::OK;
 
     bool logCalled = false;
     Operation lastOperation = Operation::NONE;
-    AuditResult lastAuditResult = AuditResult::FAILED;
+    SystemStatus lastSystemStatus = SystemStatus::FAILED;
     std::string lastOptions = "";
 
-    AuditStatus fetch(std::vector<AuditEntry>& entries) override
+    SystemStatus fetch(std::vector<AuditEntry>& entries) override
     {
         return fetchResult;
     }
 
-    AuditStatus log(Operation operation, AuditResult auditResult, std::string options) override
+    SystemStatus log(Operation operation, SystemStatus auditResult, std::string options) override
     {
         logCalled = true;
         lastOperation = operation;
-        lastAuditResult = auditResult;
+        lastSystemStatus = auditResult;
         lastOptions = options;
 
         return logResult;
