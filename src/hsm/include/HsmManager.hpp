@@ -13,7 +13,7 @@ public:
 
     SystemStatus status();
     SystemStatus eraseKey(uint8_t slot);
-    SystemStatus generateKey(uint8_t slot, std::string curve);
+    SystemStatus generateKey(uint8_t slot, Curve curve);
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey);
 
 private:

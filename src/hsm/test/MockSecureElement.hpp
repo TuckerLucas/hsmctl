@@ -10,20 +10,22 @@ class MockSecureElement : public ISecureElement
 {
 public:
     SystemStatus initResult = SystemStatus::OK;
-    SystemStatus pingResult = SystemStatus::OK;
+    SystemStatus statusResult = SystemStatus::OK;
     SystemStatus eraseKeyResult = SystemStatus::OK;
     SystemStatus generateKeyResult = SystemStatus::OK;
     SystemStatus readKeyResult = SystemStatus::OK;
     SystemStatus deinitResult = SystemStatus::OK;
+
+    Curve lastCurve = Curve::Ed25519;
 
     SystemStatus init() override
     {
         return initResult;
     }
 
-    SystemStatus ping() override
+    SystemStatus status() override
     {
-        return pingResult;
+        return statusResult;
     }
 
     SystemStatus eraseKey(uint8_t) override
@@ -31,12 +33,13 @@ public:
         return eraseKeyResult;
     }
 
-    SystemStatus generateKey(uint8_t, Curve) override
+    SystemStatus generateKey(uint8_t slot, Curve curve) override
     {
+        lastCurve = curve;
         return generateKeyResult;
     }
 
-    SystemStatus readKey(uint8_t, std::vector<uint8_t>& pubKey) override
+    SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override
     {
         pubKey = mock_public_key;
 

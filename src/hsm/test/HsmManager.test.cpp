@@ -29,7 +29,7 @@ TEST_CASE("hardware status")
 
     SECTION("ping fails")
     {
-        mock.pingResult = SystemStatus::HSM_ERROR_STATUS;
+        mock.statusResult = SystemStatus::HSM_ERROR_STATUS;
 
         auto result = hsm.status();
 
@@ -71,7 +71,7 @@ TEST_CASE("hardware status")
 
         SECTION("ping fails")
         {
-            mock.pingResult = SystemStatus::HSM_ERROR_STATUS;
+            mock.statusResult = SystemStatus::HSM_ERROR_STATUS;
 
             hsm.status();
 
@@ -192,21 +192,23 @@ TEST_CASE("generate key")
     MockAuditLogger mock_logger;
     HsmManager hsm(mock, mock_logger);
     uint8_t slot;
-    std::string curve = "p256";
+    Curve curve = Curve::P256;
 
     SECTION("success")
     {
         SECTION("Ed25519 curve")
         {
-            auto result = hsm.generateKey(slot, "ed25519");
+            auto result = hsm.generateKey(slot, Curve::Ed25519);
 
+            REQUIRE(mock.lastCurve == Curve::Ed25519);
             REQUIRE(result == SystemStatus::OK);
         }
 
         SECTION("NIST P-256 curve")
         {
-            auto result = hsm.generateKey(slot, "ed25519");
+            auto result = hsm.generateKey(slot, Curve::P256);
 
+            REQUIRE(mock.lastCurve == Curve::P256);
             REQUIRE(result == SystemStatus::OK);
         }
     }
@@ -247,8 +249,9 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
-            REQUIRE(mock_logger.lastOptions ==
-                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
+                                                   (slot < 10 ? "  " : " ") +
+                                                   "curve=" + curveToString(curve));
         }
 
         SECTION("initialization fails")
@@ -260,8 +263,9 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
-            REQUIRE(mock_logger.lastOptions ==
-                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
+                                                   (slot < 10 ? "  " : " ") +
+                                                   "curve=" + curveToString(curve));
         }
 
         SECTION("generating key fails")
@@ -273,8 +277,9 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_GENERATE_KEY);
-            REQUIRE(mock_logger.lastOptions ==
-                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
+                                                   (slot < 10 ? "  " : " ") +
+                                                   "curve=" + curveToString(curve));
         }
 
         SECTION("deinitialization fails")
@@ -286,8 +291,9 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
-            REQUIRE(mock_logger.lastOptions ==
-                    "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
+            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
+                                                   (slot < 10 ? "  " : " ") +
+                                                   "curve=" + curveToString(curve));
         }
     }
 }

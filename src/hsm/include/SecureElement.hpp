@@ -11,7 +11,7 @@ public:
     ~SecureElement();
 
     SystemStatus init() override;
-    SystemStatus ping() override;
+    SystemStatus status() override;
     SystemStatus eraseKey(uint8_t slot) override;
     SystemStatus generateKey(uint8_t slot, Curve curve) override;
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;

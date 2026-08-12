@@ -68,7 +68,7 @@ SystemStatus SecureElement::init()
     return SystemStatus::OK;
 }
 
-SystemStatus SecureElement::ping()
+SystemStatus SecureElement::status()
 {
     uint8_t recv_buf[PING_MSG_SIZE];
 

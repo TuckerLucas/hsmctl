@@ -70,7 +70,7 @@ int main(int argc, const char* argv[])
         case Operation::GENERATE_KEY:
         {
             uint8_t slot = std::stoi(command.options["slot"]);
-            std::string curve = command.options["curve"];
+            Curve curve = (command.options["curve"] == "p256") ? Curve::P256 : Curve::Ed25519;
 
             result = hsm.generateKey(slot, curve);
 
