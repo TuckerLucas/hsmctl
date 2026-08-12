@@ -1,11 +1,11 @@
-#include "cli_parser.hpp"
+#include "CliParser.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-TEST_CASE("cli_parser parseCommand")
+TEST_CASE("CliParser parseCommand")
 {
-    cli_parser parser;
+    CliParser parser;
 
     SECTION("no operation")
     {
@@ -120,7 +120,7 @@ TEST_CASE("cli_parser parseCommand")
         }
     }
 
-    SECTION("erase-key")
+    SECTION("erase key")
     {
         SECTION("success")
         {
@@ -253,7 +253,7 @@ TEST_CASE("cli_parser parseCommand")
         }
     }
 
-    SECTION("generate-key")
+    SECTION("generate key")
     {
         SECTION("success")
         {
@@ -523,7 +523,7 @@ TEST_CASE("cli_parser parseCommand")
         }
     }
 
-    SECTION("read-key")
+    SECTION("read key")
     {
         SECTION("success")
         {

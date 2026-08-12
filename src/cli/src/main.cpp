@@ -1,19 +1,17 @@
 #include <sys/stat.h>
 
+#include "AuditLogger.hpp"
+#include "CliDisplay.hpp"
+#include "CliParser.hpp"
+#include "HsmManager.hpp"
 #include "SecureElement.hpp"
-#include "audit_logger.hpp"
-#include "cli_display.hpp"
-#include "cli_parser.hpp"
-#include "hsm_manager.hpp"
 
 std::string getDbPath();
 
-// TODO: Rename test names, classes and files in consistent manner
-
 int main(int argc, const char* argv[])
 {
-    cli_display display;
-    cli_parser parser;
+    CliDisplay display;
+    CliParser parser;
     Command command = parser.parseCommand(argc, argv);
 
     if (command.error != ParseError::NONE)
@@ -29,8 +27,8 @@ int main(int argc, const char* argv[])
     }
 
     SecureElement se;
-    audit_logger logger(getDbPath());
-    hsm_manager hsm(se, logger);
+    AuditLogger logger(getDbPath());
+    HsmManager hsm(se, logger);
 
     SystemStatus result;
 

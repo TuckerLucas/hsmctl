@@ -1,10 +1,10 @@
-#include "hsm_manager.hpp"
+#include "HsmManager.hpp"
 
-hsm_manager::hsm_manager(ISecureElement& se, IAuditLogger& logger) : m_se(se), m_logger(logger)
+HsmManager::HsmManager(ISecureElement& se, IAuditLogger& logger) : m_se(se), m_logger(logger)
 {
 }
 
-SystemStatus hsm_manager::status()
+SystemStatus HsmManager::status()
 {
     SystemStatus result;
 
@@ -37,7 +37,7 @@ SystemStatus hsm_manager::status()
     return result;
 }
 
-SystemStatus hsm_manager::eraseKey(uint8_t slot)
+SystemStatus HsmManager::eraseKey(uint8_t slot)
 {
     SystemStatus result;
 
@@ -70,7 +70,7 @@ SystemStatus hsm_manager::eraseKey(uint8_t slot)
     return result;
 }
 
-SystemStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str)
+SystemStatus HsmManager::generateKey(uint8_t slot, std::string curve_str)
 {
     Curve curve;
 
@@ -112,7 +112,7 @@ SystemStatus hsm_manager::generateKey(uint8_t slot, std::string curve_str)
     return result;
 }
 
-SystemStatus hsm_manager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
+SystemStatus HsmManager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 {
     SystemStatus result;
 

@@ -1,7 +1,6 @@
-#include "hsm_manager.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 
+#include "HsmManager.hpp"
 #include "MockAuditLogger.hpp"
 #include "MockSecureElement.hpp"
 
@@ -9,7 +8,7 @@ TEST_CASE("hardware status")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
-    hsm_manager hsm(mock, mock_logger);
+    HsmManager hsm(mock, mock_logger);
 
     SECTION("success")
     {
@@ -99,7 +98,7 @@ TEST_CASE("erase key")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
-    hsm_manager hsm(mock, mock_logger);
+    HsmManager hsm(mock, mock_logger);
     uint8_t slot;
 
     SECTION("success")
@@ -190,7 +189,7 @@ TEST_CASE("generate key")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
-    hsm_manager hsm(mock, mock_logger);
+    HsmManager hsm(mock, mock_logger);
     uint8_t slot;
     std::string curve = "p256";
 
@@ -296,7 +295,7 @@ TEST_CASE("read key")
 {
     MockSecureElement mock;
     MockAuditLogger mock_logger;
-    hsm_manager hsm(mock, mock_logger);
+    HsmManager hsm(mock, mock_logger);
     uint8_t slot;
     std::vector<uint8_t> pubKey;
 

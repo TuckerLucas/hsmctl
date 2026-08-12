@@ -2,9 +2,9 @@
 
 #include <vector>
 
+#include "AuditTypes.hpp"
+#include "Operation.hpp"
 #include "SystemStatus.hpp"
-#include "audit_types.hpp"
-#include "operation.hpp"
 
 class IAuditLogger
 {

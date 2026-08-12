@@ -1,8 +1,8 @@
-#include "audit_logger.hpp"
-
 #include <cassert>
 
-audit_logger::audit_logger(const std::string& connection_string)
+#include "AuditLogger.hpp"
+
+AuditLogger::AuditLogger(const std::string& connection_string)
 {
     if (sqlite3_open(connection_string.c_str(), &m_db) != SQLITE_OK)
     {
@@ -26,7 +26,7 @@ audit_logger::audit_logger(const std::string& connection_string)
     }
 }
 
-audit_logger::~audit_logger()
+AuditLogger::~AuditLogger()
 {
     if (m_db)
     {
@@ -34,7 +34,7 @@ audit_logger::~audit_logger()
     }
 }
 
-SystemStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
+SystemStatus AuditLogger::fetch(std::vector<AuditEntry>& entries)
 {
     if (!m_db)
     {
@@ -65,7 +65,7 @@ SystemStatus audit_logger::fetch(std::vector<AuditEntry>& entries)
     return SystemStatus::OK;
 }
 
-SystemStatus audit_logger::log(Operation operation, SystemStatus auditResult, std::string options)
+SystemStatus AuditLogger::log(Operation operation, SystemStatus auditResult, std::string options)
 {
     if (!m_db)
     {

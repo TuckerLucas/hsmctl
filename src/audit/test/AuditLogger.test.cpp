@@ -1,12 +1,12 @@
-#include "audit_logger.hpp"
+#include "AuditLogger.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("audit_logger")
+TEST_CASE("audit logger")
 {
     SECTION("valid database")
     {
-        audit_logger logger(":memory:");
+        AuditLogger logger(":memory:");
 
         SECTION("reading empty database")
         {
@@ -115,7 +115,7 @@ TEST_CASE("audit_logger")
 
     SECTION("invalid database")
     {
-        audit_logger logger("/invalid/path/hsmctl.db");
+        AuditLogger logger("/invalid/path/hsmctl.db");
 
         SECTION("reading from database fails")
         {

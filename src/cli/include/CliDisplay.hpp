@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
+#include "AuditTypes.hpp"
+#include "CliTypes.hpp"
 #include "ISecureElement.hpp"
-#include "audit_types.hpp"
-#include "cli_types.hpp"
 
-class cli_display
+class CliDisplay
 {
 private:
     std::string operationToString(Operation operation);

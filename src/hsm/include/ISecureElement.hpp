@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "HsmTypes.hpp"
 #include "SystemStatus.hpp"
-#include "hsm_types.hpp"
 
 class ISecureElement
 {

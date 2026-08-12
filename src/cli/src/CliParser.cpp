@@ -1,8 +1,8 @@
-#include "cli_parser.hpp"
-
 #include <iostream>
 
-Command cli_parser::parseCommand(int argc, const char* argv[])
+#include "CliParser.hpp"
+
+Command CliParser::parseCommand(int argc, const char* argv[])
 {
     Command command;
 

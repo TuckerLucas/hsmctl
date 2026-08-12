@@ -1,6 +1,6 @@
 # ==== HSM library ====
 add_library(hsm
-    src/hsm_manager.cpp
+    src/HsmManager.cpp
     src/SecureElement.cpp
 )
 
@@ -16,7 +16,7 @@ target_link_libraries(hsm PRIVATE
 
 # ==== Tests ====
 add_executable(test_hsm
-    test/hsm_manager.test.cpp
+    test/HsmManager.test.cpp
 )
 
 target_include_directories(test_hsm PRIVATE

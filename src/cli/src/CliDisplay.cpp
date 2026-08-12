@@ -1,9 +1,9 @@
-#include "cli_display.hpp"
-
 #include <cassert>
 #include <iomanip>
 
-std::string cli_display::operationToString(Operation operation)
+#include "CliDisplay.hpp"
+
+std::string CliDisplay::operationToString(Operation operation)
 {
     switch (operation)
     {
@@ -22,7 +22,7 @@ std::string cli_display::operationToString(Operation operation)
     }
 }
 
-void cli_display::helpMenu()
+void CliDisplay::helpMenu()
 {
     std::cout << "hsmctl <operation> [options]\n";
     std::cout << "\n";
@@ -44,7 +44,7 @@ void cli_display::helpMenu()
     std::cout << "        Run 'hsmctl <operation> --help' for operation specific options.\n";
 }
 
-void cli_display::commandError(Command command)
+void CliDisplay::commandError(Command command)
 {
     switch (command.error)
     {
@@ -82,7 +82,7 @@ void cli_display::commandError(Command command)
     }
 }
 
-void cli_display::statusResult(SystemStatus result)
+void CliDisplay::statusResult(SystemStatus result)
 {
     if (result == SystemStatus::OK)
     {
@@ -101,7 +101,7 @@ void cli_display::statusResult(SystemStatus result)
     }
 }
 
-void cli_display::logsResult(SystemStatus result, std::vector<AuditEntry> entries)
+void CliDisplay::logsResult(SystemStatus result, std::vector<AuditEntry> entries)
 {
     if (result == SystemStatus::OK)
     {
@@ -129,7 +129,7 @@ void cli_display::logsResult(SystemStatus result, std::vector<AuditEntry> entrie
     }
 }
 
-void cli_display::eraseKeyResult(SystemStatus result, uint8_t slot)
+void CliDisplay::eraseKeyResult(SystemStatus result, uint8_t slot)
 {
     if (result == SystemStatus::OK)
     {
@@ -148,7 +148,7 @@ void cli_display::eraseKeyResult(SystemStatus result, uint8_t slot)
     }
 }
 
-void cli_display::generateKeyResult(SystemStatus result, Command command)
+void CliDisplay::generateKeyResult(SystemStatus result, Command command)
 {
     if (result == SystemStatus::OK)
     {
@@ -175,7 +175,7 @@ void cli_display::generateKeyResult(SystemStatus result, Command command)
     }
 }
 
-void cli_display::readKeyResult(SystemStatus result, uint8_t slot, std::vector<uint8_t> pubKey)
+void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<uint8_t> pubKey)
 {
     if (result == SystemStatus::OK)
     {
@@ -220,7 +220,7 @@ void cli_display::readKeyResult(SystemStatus result, uint8_t slot, std::vector<u
     }
 }
 
-void cli_display::status_help()
+void CliDisplay::status_help()
 {
     std::cout << "Usage:\n";
     std::cout << "        hsmctl status\n";
@@ -232,7 +232,7 @@ void cli_display::status_help()
     std::cout << "        hsmctl status\n";
 }
 
-void cli_display::logs_help()
+void CliDisplay::logs_help()
 {
     std::cout << "Usage:\n";
     std::cout << "        hsmctl logs\n";
@@ -244,7 +244,7 @@ void cli_display::logs_help()
     std::cout << "        hsmctl logs\n";
 }
 
-void cli_display::eraseKey_help()
+void CliDisplay::eraseKey_help()
 {
     std::cout << "Usage:\n";
     std::cout << "        hsmctl erase-key --slot <slot>\n";
@@ -261,7 +261,7 @@ void cli_display::eraseKey_help()
     std::cout << "        hsmctl erase-key --slot 28\n";
 }
 
-void cli_display::generateKey_help()
+void CliDisplay::generateKey_help()
 {
     std::cout << "Usage:\n";
     std::cout << "        hsmctl generate-key --slot <slot>\n";
@@ -283,7 +283,7 @@ void cli_display::generateKey_help()
     std::cout << "        hsmctl generate-key --curve p256 --slot 3\n";
 }
 
-void cli_display::readKey_help()
+void CliDisplay::readKey_help()
 {
     std::cout << "Usage:\n";
     std::cout << "        hsmctl read-key --slot <slot>\n";
@@ -300,7 +300,7 @@ void cli_display::readKey_help()
     std::cout << "        hsmctl read-key --slot 31\n";
 }
 
-void cli_display::operationHelpMenu(Operation op)
+void CliDisplay::operationHelpMenu(Operation op)
 {
     switch (op)
     {

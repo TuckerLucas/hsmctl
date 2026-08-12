@@ -6,10 +6,10 @@
 #include "IAuditLogger.hpp"
 #include "ISecureElement.hpp"
 
-class hsm_manager
+class HsmManager
 {
 public:
-    hsm_manager(ISecureElement& se, IAuditLogger& logger);
+    HsmManager(ISecureElement& se, IAuditLogger& logger);
 
     SystemStatus status();
     SystemStatus eraseKey(uint8_t slot);

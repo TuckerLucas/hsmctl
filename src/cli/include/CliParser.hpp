@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cli_types.hpp"
+#include "CliTypes.hpp"
 
-class cli_parser
+class CliParser
 {
 public:
     Command parseCommand(int argc, const char* argv[]);

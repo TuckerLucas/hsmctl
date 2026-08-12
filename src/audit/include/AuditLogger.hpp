@@ -8,11 +8,11 @@
 
 #include "IAuditLogger.hpp"
 
-class audit_logger : public IAuditLogger
+class AuditLogger : public IAuditLogger
 {
 public:
-    audit_logger(const std::string& connection_string);
-    ~audit_logger();
+    AuditLogger(const std::string& connection_string);
+    ~AuditLogger();
 
     SystemStatus fetch(std::vector<AuditEntry>& entries) override;
     SystemStatus log(Operation operation, SystemStatus auditResult, std::string options) override;

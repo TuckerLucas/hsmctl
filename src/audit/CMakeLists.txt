@@ -1,6 +1,6 @@
 # ==== Audit Logger library ====
 add_library(audit
-    src/audit_logger.cpp
+    src/AuditLogger.cpp
 )
 
 target_include_directories(audit PUBLIC
@@ -13,7 +13,7 @@ target_link_libraries(audit
 
 # ==== Tests ====
 add_executable(test_audit
-    test/audit_logger.test.cpp
+    test/AuditLogger.test.cpp
 )
 
 target_include_directories(test_audit PRIVATE

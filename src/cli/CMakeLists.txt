@@ -1,8 +1,8 @@
 # ==== CLI executable ====
 add_executable(hsmctl
     src/main.cpp
-    src/cli_parser.cpp
-    src/cli_display.cpp
+    src/CliParser.cpp
+    src/CliDisplay.cpp
 )
 
 target_include_directories(hsmctl PRIVATE
@@ -16,8 +16,8 @@ target_link_libraries(hsmctl
 
 # ==== Tests ====
 add_executable(test_cli
-    test/cli_parser.test.cpp
-    src/cli_parser.cpp
+    test/CliParser.test.cpp
+    src/CliParser.cpp
 )
 
 target_include_directories(test_cli PRIVATE
