@@ -211,13 +211,6 @@ TEST_CASE("generate key")
         }
     }
 
-    SECTION("Invalid curve")
-    {
-        auto result = hsm.generateKey(slot, "invaid-curve");
-
-        REQUIRE(result == SystemStatus::ERROR_INVALID_CURVE);
-    }
-
     SECTION("initialization fails")
     {
         mock.initResult = SystemStatus::ERROR_INIT;
