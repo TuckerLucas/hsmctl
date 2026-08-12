@@ -12,7 +12,7 @@ SystemStatus HsmManager::status()
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
+        m_logger.log(Operation::STATUS, result, "");
         return result;
     }
 
@@ -20,19 +20,13 @@ SystemStatus HsmManager::status()
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
+        m_logger.log(Operation::STATUS, result, "");
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SystemStatus::OK)
-    {
-        m_logger.log(Operation::STATUS, SystemStatus::FAILED, "");
-        return result;
-    }
-
-    m_logger.log(Operation::STATUS, SystemStatus::SUCCESS, "");
+    m_logger.log(Operation::STATUS, result, "");
 
     return result;
 }
@@ -45,7 +39,7 @@ SystemStatus HsmManager::eraseKey(uint8_t slot)
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::ERASE_KEY, result, "slot=" + std::to_string(slot));
         return result;
     }
 
@@ -53,19 +47,13 @@ SystemStatus HsmManager::eraseKey(uint8_t slot)
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::ERASE_KEY, result, "slot=" + std::to_string(slot));
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SystemStatus::OK)
-    {
-        m_logger.log(Operation::ERASE_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
-        return result;
-    }
-
-    m_logger.log(Operation::ERASE_KEY, SystemStatus::SUCCESS, "slot=" + std::to_string(slot));
+    m_logger.log(Operation::ERASE_KEY, result, "slot=" + std::to_string(slot));
 
     return result;
 }
@@ -81,7 +69,7 @@ SystemStatus HsmManager::generateKey(uint8_t slot, std::string curve_str)
     if (result != SystemStatus::OK)
     {
         m_logger.log(
-            Operation::GENERATE_KEY, SystemStatus::FAILED,
+            Operation::GENERATE_KEY, result,
             "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
         return result;
     }
@@ -91,22 +79,14 @@ SystemStatus HsmManager::generateKey(uint8_t slot, std::string curve_str)
     if (result != SystemStatus::OK)
     {
         m_logger.log(
-            Operation::GENERATE_KEY, SystemStatus::FAILED,
+            Operation::GENERATE_KEY, result,
             "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
         return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SystemStatus::OK)
-    {
-        m_logger.log(
-            Operation::GENERATE_KEY, SystemStatus::FAILED,
-            "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
-        return result;
-    }
-
-    m_logger.log(Operation::GENERATE_KEY, SystemStatus::SUCCESS,
+    m_logger.log(Operation::GENERATE_KEY, result,
                  "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve_str);
 
     return result;
@@ -120,27 +100,21 @@ SystemStatus HsmManager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
-        return SystemStatus::ERROR_INIT;
+        m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
+        return result;
     }
 
     result = m_se.readKey(slot, pubKey);
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
-        return SystemStatus::ERROR_READ_KEY;
+        m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
+        return result;
     }
 
     result = m_se.deinit();
 
-    if (result != SystemStatus::OK)
-    {
-        m_logger.log(Operation::READ_KEY, SystemStatus::FAILED, "slot=" + std::to_string(slot));
-        return SystemStatus::ERROR_DEINIT;
-    }
-
-    m_logger.log(Operation::READ_KEY, SystemStatus::SUCCESS, "slot=" + std::to_string(slot));
+    m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
 
     return result;
 }

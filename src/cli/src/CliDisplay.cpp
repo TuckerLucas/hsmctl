@@ -1,26 +1,7 @@
-#include <cassert>
-#include <iomanip>
-
 #include "CliDisplay.hpp"
 
-std::string CliDisplay::operationToString(Operation operation)
-{
-    switch (operation)
-    {
-        case Operation::STATUS:
-            return "status";
-        case Operation::LOGS:
-            return "logs";
-        case Operation::ERASE_KEY:
-            return "erase-key";
-        case Operation::GENERATE_KEY:
-            return "generate-key";
-        case Operation::READ_KEY:
-            return "read-key";
-        default:
-            return "unknown";
-    }
-}
+#include <cassert>
+#include <iomanip>
 
 void CliDisplay::helpMenu()
 {
@@ -92,11 +73,11 @@ void CliDisplay::statusResult(SystemStatus result)
     {
         std::cout << "Could not detect hardware: ";
 
-        if (result == SystemStatus::ERROR_INIT)
+        if (result == SystemStatus::HSM_ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::ERROR_PING)
+        else if (result == SystemStatus::HSM_ERROR_STATUS)
             std::cout << "ping failed. Check that the security module is connected.\n";
-        else if (result == SystemStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
@@ -139,11 +120,11 @@ void CliDisplay::eraseKeyResult(SystemStatus result, uint8_t slot)
     {
         std::cout << "Operation failed: ";
 
-        if (result == SystemStatus::ERROR_INIT)
+        if (result == SystemStatus::HSM_ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::ERROR_ERASE_KEY)
+        else if (result == SystemStatus::HSM_ERROR_ERASE_KEY)
             std::cout << "could not erase key.\n";
-        else if (result == SystemStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
@@ -159,9 +140,9 @@ void CliDisplay::generateKeyResult(SystemStatus result, Command command)
     {
         std::cout << "Operation failed: ";
 
-        if (result == SystemStatus::ERROR_INIT)
+        if (result == SystemStatus::HSM_ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::ERROR_GENERATE_KEY)
+        else if (result == SystemStatus::HSM_ERROR_GENERATE_KEY)
         {
             std::cout << "could not generate key.";
             std::cout << "\n";
@@ -170,7 +151,7 @@ void CliDisplay::generateKeyResult(SystemStatus result, Command command)
                       << command.options["slot"] << "' to erase it first.";
             std::cout << "\n";
         }
-        else if (result == SystemStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }
@@ -204,9 +185,9 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
     {
         std::cout << "Operation failed: ";
 
-        if (result == SystemStatus::ERROR_INIT)
+        if (result == SystemStatus::HSM_ERROR_INIT)
             std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::ERROR_READ_KEY)
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY)
         {
             std::cout << "could not read key.";
             std::cout << "\n";
@@ -215,7 +196,7 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
                       << "' to generate a key first.";
             std::cout << "\n";
         }
-        else if (result == SystemStatus::ERROR_DEINIT)
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }
 }

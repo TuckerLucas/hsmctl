@@ -1,6 +1,7 @@
+#include "HsmManager.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
-#include "HsmManager.hpp"
 #include "MockAuditLogger.hpp"
 #include "MockSecureElement.hpp"
 
@@ -19,29 +20,29 @@ TEST_CASE("hardware status")
 
     SECTION("initialization fails")
     {
-        mock.initResult = SystemStatus::ERROR_INIT;
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
         auto result = hsm.status();
 
-        REQUIRE(result == SystemStatus::ERROR_INIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
     }
 
     SECTION("ping fails")
     {
-        mock.pingResult = SystemStatus::ERROR_PING;
+        mock.pingResult = SystemStatus::HSM_ERROR_STATUS;
 
         auto result = hsm.status();
 
-        REQUIRE(result == SystemStatus::ERROR_PING);
+        REQUIRE(result == SystemStatus::HSM_ERROR_STATUS);
     }
 
     SECTION("deinitialization fails")
     {
-        mock.deinitResult = SystemStatus::ERROR_DEINIT;
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
         auto result = hsm.status();
 
-        REQUIRE(result == SystemStatus::ERROR_DEINIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
     }
 
     SECTION("logging")
@@ -52,43 +53,43 @@ TEST_CASE("hardware status")
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::STATUS);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::SUCCESS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
             REQUIRE(mock_logger.lastOptions == "");
         }
 
         SECTION("initialization fails")
         {
-            mock.initResult = SystemStatus::ERROR_INIT;
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
             hsm.status();
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::STATUS);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
             REQUIRE(mock_logger.lastOptions == "");
         }
 
         SECTION("ping fails")
         {
-            mock.pingResult = SystemStatus::ERROR_PING;
+            mock.pingResult = SystemStatus::HSM_ERROR_STATUS;
 
             hsm.status();
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::STATUS);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_STATUS);
             REQUIRE(mock_logger.lastOptions == "");
         }
 
         SECTION("deinitialization fails")
         {
-            mock.deinitResult = SystemStatus::ERROR_DEINIT;
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
             hsm.status();
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::STATUS);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions == "");
         }
     }
@@ -110,29 +111,29 @@ TEST_CASE("erase key")
 
     SECTION("initialization fails")
     {
-        mock.initResult = SystemStatus::ERROR_INIT;
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
         auto result = hsm.eraseKey(slot);
 
-        REQUIRE(result == SystemStatus::ERROR_INIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
     }
 
     SECTION("erasing key fails")
     {
-        mock.eraseKeyResult = SystemStatus::ERROR_ERASE_KEY;
+        mock.eraseKeyResult = SystemStatus::HSM_ERROR_ERASE_KEY;
 
         auto result = hsm.eraseKey(slot);
 
-        REQUIRE(result == SystemStatus::ERROR_ERASE_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_ERASE_KEY);
     }
 
     SECTION("deinitialization fails")
     {
-        mock.deinitResult = SystemStatus::ERROR_DEINIT;
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
         auto result = hsm.eraseKey(slot);
 
-        REQUIRE(result == SystemStatus::ERROR_DEINIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
     }
 
     SECTION("logging")
@@ -143,43 +144,43 @@ TEST_CASE("erase key")
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::SUCCESS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("initialization fails")
         {
-            mock.initResult = SystemStatus::ERROR_INIT;
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
             hsm.eraseKey(slot);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("erasing key fails")
         {
-            mock.eraseKeyResult = SystemStatus::ERROR_ERASE_KEY;
+            mock.eraseKeyResult = SystemStatus::HSM_ERROR_ERASE_KEY;
 
             hsm.eraseKey(slot);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_ERASE_KEY);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("deinitialization fails")
         {
-            mock.deinitResult = SystemStatus::ERROR_DEINIT;
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
             hsm.eraseKey(slot);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::ERASE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
     }
@@ -212,29 +213,29 @@ TEST_CASE("generate key")
 
     SECTION("initialization fails")
     {
-        mock.initResult = SystemStatus::ERROR_INIT;
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
         auto result = hsm.generateKey(slot, curve);
 
-        REQUIRE(result == SystemStatus::ERROR_INIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
     }
 
     SECTION("generating key fails")
     {
-        mock.generateKeyResult = SystemStatus::ERROR_GENERATE_KEY;
+        mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY;
 
         auto result = hsm.generateKey(slot, curve);
 
-        REQUIRE(result == SystemStatus::ERROR_GENERATE_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_GENERATE_KEY);
     }
 
     SECTION("deinitialization fails")
     {
-        mock.deinitResult = SystemStatus::ERROR_DEINIT;
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
         auto result = hsm.generateKey(slot, curve);
 
-        REQUIRE(result == SystemStatus::ERROR_DEINIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
     }
 
     SECTION("logging")
@@ -245,46 +246,46 @@ TEST_CASE("generate key")
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::SUCCESS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
             REQUIRE(mock_logger.lastOptions ==
                     "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("initialization fails")
         {
-            mock.initResult = SystemStatus::ERROR_INIT;
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
             hsm.generateKey(slot, curve);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
             REQUIRE(mock_logger.lastOptions ==
                     "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("generating key fails")
         {
-            mock.generateKeyResult = SystemStatus::ERROR_GENERATE_KEY;
+            mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY;
 
             hsm.generateKey(slot, curve);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_GENERATE_KEY);
             REQUIRE(mock_logger.lastOptions ==
                     "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
 
         SECTION("deinitialization fails")
         {
-            mock.deinitResult = SystemStatus::ERROR_DEINIT;
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
             hsm.generateKey(slot, curve);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions ==
                     "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") + "curve=" + curve);
         }
@@ -309,29 +310,29 @@ TEST_CASE("read key")
 
     SECTION("initialization fails")
     {
-        mock.initResult = SystemStatus::ERROR_INIT;
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
         auto result = hsm.readKey(slot, pubKey);
 
-        REQUIRE(result == SystemStatus::ERROR_INIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
     }
 
     SECTION("reading key fails")
     {
-        mock.readKeyResult = SystemStatus::ERROR_READ_KEY;
+        mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY;
 
         auto result = hsm.readKey(slot, pubKey);
 
-        REQUIRE(result == SystemStatus::ERROR_READ_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY);
     }
 
     SECTION("deinitialization fails")
     {
-        mock.deinitResult = SystemStatus::ERROR_DEINIT;
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
         auto result = hsm.readKey(slot, pubKey);
 
-        REQUIRE(result == SystemStatus::ERROR_DEINIT);
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
     }
 
     SECTION("logging")
@@ -342,43 +343,43 @@ TEST_CASE("read key")
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::SUCCESS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("initialization fails")
         {
-            mock.initResult = SystemStatus::ERROR_INIT;
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
             hsm.readKey(slot, pubKey);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("read key fails")
         {
-            mock.readKeyResult = SystemStatus::ERROR_READ_KEY;
+            mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY;
 
             hsm.readKey(slot, pubKey);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
         SECTION("deinitialization fails")
         {
-            mock.deinitResult = SystemStatus::ERROR_DEINIT;
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
             hsm.readKey(slot, pubKey);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::FAILED);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
     }

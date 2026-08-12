@@ -10,9 +10,6 @@
 
 class CliDisplay
 {
-private:
-    std::string operationToString(Operation operation);
-
 public:
     void helpMenu();
     void commandError(Command command);

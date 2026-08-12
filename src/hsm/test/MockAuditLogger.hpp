@@ -12,7 +12,7 @@ public:
 
     bool logCalled = false;
     Operation lastOperation = Operation::NONE;
-    SystemStatus lastSystemStatus = SystemStatus::FAILED;
+    SystemStatus lastSystemStatus = SystemStatus::NOK;
     std::string lastOptions = "";
 
     SystemStatus fetch(std::vector<AuditEntry>& entries) override

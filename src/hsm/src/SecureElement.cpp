@@ -34,7 +34,7 @@ SystemStatus SecureElement::init()
 {
     if (psa_crypto_init() != PSA_SUCCESS)
     {
-        return SystemStatus::ERROR_INIT;
+        return SystemStatus::HSM_ERROR_INIT;
     }
 
     snprintf(m_impl->device.spi_dev, sizeof(m_impl->device.spi_dev), "/dev/spidev0.0");
@@ -47,14 +47,14 @@ SystemStatus SecureElement::init()
 
     if (lt_init(&m_impl->handle) != LT_OK)
     {
-        return SystemStatus::ERROR_INIT;
+        return SystemStatus::HSM_ERROR_INIT;
     }
 
     if (lt_reboot(&m_impl->handle, TR01_REBOOT) != LT_OK)
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_INIT;
+        return SystemStatus::HSM_ERROR_INIT;
     }
 
     if (lt_verify_chip_and_start_secure_session(&m_impl->handle, lt_sh0priv_prod0, lt_sh0pub_prod0,
@@ -62,7 +62,7 @@ SystemStatus SecureElement::init()
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_INIT;
+        return SystemStatus::HSM_ERROR_INIT;
     }
 
     return SystemStatus::OK;
@@ -77,7 +77,7 @@ SystemStatus SecureElement::ping()
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_PING;
+        return SystemStatus::HSM_ERROR_STATUS;
     }
 
     return SystemStatus::OK;
@@ -90,7 +90,7 @@ SystemStatus SecureElement::eraseKey(uint8_t slot)
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_ERASE_KEY;
+        return SystemStatus::HSM_ERROR_ERASE_KEY;
     }
 
     return SystemStatus::OK;
@@ -105,7 +105,7 @@ SystemStatus SecureElement::generateKey(uint8_t slot, Curve curve)
         lt_session_abort(&m_impl->handle);
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_GENERATE_KEY;
+        return SystemStatus::HSM_ERROR_GENERATE_KEY;
     }
 
     return SystemStatus::OK;
@@ -124,7 +124,7 @@ SystemStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
 
-        return SystemStatus::ERROR_READ_KEY;
+        return SystemStatus::HSM_ERROR_READ_KEY;
     }
 
     int key_len = (curve == TR01_CURVE_ED25519) ? 32 : 64;
@@ -140,13 +140,13 @@ SystemStatus SecureElement::deinit()
     {
         lt_deinit(&m_impl->handle);
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_DEINIT;
+        return SystemStatus::HSM_ERROR_DEINIT;
     }
 
     if (lt_deinit(&m_impl->handle) != LT_OK)
     {
         mbedtls_psa_crypto_free();
-        return SystemStatus::ERROR_DEINIT;
+        return SystemStatus::HSM_ERROR_DEINIT;
     }
 
     mbedtls_psa_crypto_free();
