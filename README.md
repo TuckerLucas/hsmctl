@@ -6,90 +6,80 @@ Built on the [TROPIC01](https://www.tropicsquare.com/tropic01) secure element, h
 
 ## Hardware Requirements
 
-- **Raspberry Pi** - available at [Raspberry Pi Foundation](https://www.raspberrypi.com/)
-- **TROPIC01 Raspberry Pi Shield** - available at [Tropic Square](https://www.tropicsquare.com/order-devboard-form)
+The following hardware is required in order to use hsmctl: 
+
+- Raspberry Pi - available at [Raspberry Pi Foundation](https://www.raspberrypi.com/)
+
+- TROPIC01 Raspberry Pi Shield - available at [Tropic Square](https://www.tropicsquare.com/order-devboard-form)
 
 The TROPIC01 shield mounts directly onto the Raspberry Pi GPIO header and communicates over SPI. You can get started with the TROPIC01 with the tutorials provided [here](https://tropicsquare.github.io/libtropic/latest/tutorials/linux/spi/).
 
 ## Dependencies
 
-SQLite3 is required and must be installed before building:
-
 ```bash
+sudo apt install git
+sudo apt install build-essential
+sudo apt install cmake
 sudo apt install libsqlite3-dev
 ```
 
-## Building
+## Building and installing
 
 ```bash
-git clone https://github.com/yourname/hsmctl
+git clone https://github.com/TuckerLucas/hsmctl
 cd hsmctl
 mkdir build && cd build
 cmake ..
-ninja
+make
+sudo make install
 ```
 
 ## Command Reference
 
-### status
+| Command | Description | Options |
+|---------|-------------|---------|
+| `status` | Check if the secure element is connected | — |
+| `logs` | Display the full audit log | — |
+| `generate-key` | Generate an ECC key pair in a hardware slot | `--slot <0-31>` `--curve <ed25519\|p256>` |
+| `read-key` | Read back the public key from a slot | `--slot <0-31>` |
+| `erase-key` | Erase the key stored in a slot | `--slot <0-31>` |
 
-Check if the TROPIC01 secure element is connected and responding.
+### Quick start
 
 ```bash
+# Confirm the secure element is connected
 hsmctl status
-hsmctl status --help
-```
 
-### generate-key
+# Generate a key in slot 0 (Ed25519 by default)
+hsmctl generate-key --slot 0
 
-Generate an ECC key pair in the specified slot. The private key is generated inside the hardware and never leaves the secure element. The public key can be retrieved with `read-key`.
+# Generate a P-256 key in slot 1 (NIST P-256)
+hsmctl generate-key --slot 1 --curve p256
 
-```bash
-hsmctl generate-key --slot <0-31>
-hsmctl generate-key --slot <0-31> --curve <ed25519|p256>
-hsmctl generate-key --help
-```
+# Read back a public key
+hsmctl read-key --slot 0
 
-### read-key
+# Erase a key
+hsmctl erase-key --slot 0
 
-Read back the public key from a slot.
-
-```bash
-hsmctl read-key --slot <0-31>
-hsmctl read-key --help
-```
-
-### erase-key
-
-Erase the key stored in the specified slot.
-
-```bash
-hsmctl erase-key --slot <0-31>
-hsmctl erase-key --help
-```
-
-### logs
-
-Display the audit log of all operations performed. 
-
-```bash
+# View the audit log
 hsmctl logs
-hsmctl logs --help
 ```
 
-The audit log persists across sessions in `~/.hsmctl/audit.db`, presenting the user with an output similar to the one below:
+Every operation is logged automatically to `~/.hsmctl/audit.db`. Running the quick start commands above produces:
 
 ```
 Audit Log
---------------------------------------------------------------------
-Timestamp             Operation      Result    Options
---------------------------------------------------------------------
-2026-08-11 20:18:41   status         SUCCESS
-2026-08-11 20:18:44   generate-key   SUCCESS   slot=1  curve=ed25519
-2026-08-11 20:18:47   read-key       SUCCESS   slot=1
-2026-08-11 20:18:49   erase-key      SUCCESS   slot=1
---------------------------------------------------------------------
-4 operations logged
+---------------------------------------------------------------------------
+Timestamp             Operation      Result    Options             
+---------------------------------------------------------------------------
+2026-08-14 21:24:21   status         SUCCESS                       
+2026-08-14 21:24:42   generate-key   SUCCESS   slot=0  curve=ed25519
+2026-08-14 21:24:55   generate-key   SUCCESS   slot=1  curve=p256  
+2026-08-14 21:25:09   read-key       SUCCESS   slot=0              
+2026-08-14 21:25:23   erase-key      SUCCESS   slot=0              
+---------------------------------------------------------------------------
+5 operations logged
 ```
 
 ## Roadmap

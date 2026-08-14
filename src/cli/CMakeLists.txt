@@ -14,6 +14,8 @@ target_link_libraries(hsmctl
                       PRIVATE audit
                       PRIVATE common)
 
+install(TARGETS hsmctl DESTINATION /usr/local/bin)
+
 # ==== Tests ====
 add_executable(test_cli
     test/CliParser.test.cpp
