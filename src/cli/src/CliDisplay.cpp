@@ -19,6 +19,8 @@ void CliDisplay::helpMenu()
     std::cout << "                     logs           Display HSM audit logs.\n";
     std::cout << "                     erase-key      Erase a key.\n";
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
+    std::cout << "                     read-key       Read a public key.\n";
+    std::cout << "                     list-keys      Read all public keys.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
@@ -198,6 +200,18 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
         }
         else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
+    }
+}
+
+void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uint8_t>> pubKeys)
+{
+    if (result == SystemStatus::OK)
+    {
+        std::cout << "Read all keys!\n";
+    }
+    else
+    {
+        std::cout << "Error reading keys\n";
     }
 }
 

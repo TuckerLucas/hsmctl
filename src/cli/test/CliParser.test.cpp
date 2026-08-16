@@ -655,4 +655,39 @@ TEST_CASE("CliParser parseCommand")
             }
         }
     }
+
+    SECTION("list all keys")
+    {
+        SECTION("success")
+        {
+            const char* argv[] = {"hsmctl", "list-keys"};
+
+            auto parsed_command = parser.parseCommand(2, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help == false);
+        }
+
+        SECTION("help")
+        {
+            const char* argv[] = {"hsmctl", "list-keys", "--help"};
+
+            auto parsed_command = parser.parseCommand(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+            REQUIRE(parsed_command.error == ParseError::NONE);
+            REQUIRE(parsed_command.requires_help);
+        }
+
+        SECTION("invalid option")
+        {
+            const char* argv[] = {"hsmctl", "list-keys", "--some-option"};
+
+            auto parsed_command = parser.parseCommand(3, argv);
+
+            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+            REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+        }
+    }
 }

@@ -89,6 +89,16 @@ int main(int argc, const char* argv[])
 
             break;
         }
+        case Operation::LIST_KEYS:
+        {
+            std::vector<std::vector<uint8_t>> pubKeys;
+
+            result = hsm.listKeys(pubKeys);
+
+            display.listKeysResult(result, pubKeys);
+
+            break;
+        }
         case Operation::NONE:
         default:
             display.commandError(command);

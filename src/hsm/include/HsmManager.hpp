@@ -15,6 +15,7 @@ public:
     SystemStatus eraseKey(uint8_t slot);
     SystemStatus generateKey(uint8_t slot, Curve curve);
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey);
+    SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys);
 
 private:
     ISecureElement& m_se;

@@ -134,6 +134,11 @@ SystemStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
     return SystemStatus::OK;
 }
 
+SystemStatus SecureElement::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
+{
+    return SystemStatus::OK;
+}
+
 SystemStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)

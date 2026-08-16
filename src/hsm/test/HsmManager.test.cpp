@@ -18,7 +18,7 @@ TEST_CASE("hardware status")
         REQUIRE(result == SystemStatus::OK);
     }
 
-    SECTION("initialization fails")
+    SECTION("hardware initialization fails")
     {
         mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -36,7 +36,7 @@ TEST_CASE("hardware status")
         REQUIRE(result == SystemStatus::HSM_ERROR_STATUS);
     }
 
-    SECTION("deinitialization fails")
+    SECTION("hardware deinitialization fails")
     {
         mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -57,7 +57,7 @@ TEST_CASE("hardware status")
             REQUIRE(mock_logger.lastOptions == "");
         }
 
-        SECTION("initialization fails")
+        SECTION("hardware initialization fails")
         {
             mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -81,7 +81,7 @@ TEST_CASE("hardware status")
             REQUIRE(mock_logger.lastOptions == "");
         }
 
-        SECTION("deinitialization fails")
+        SECTION("hardware deinitialization fails")
         {
             mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -109,7 +109,7 @@ TEST_CASE("erase key")
         REQUIRE(result == SystemStatus::OK);
     }
 
-    SECTION("initialization fails")
+    SECTION("hardware initialization fails")
     {
         mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -127,7 +127,7 @@ TEST_CASE("erase key")
         REQUIRE(result == SystemStatus::HSM_ERROR_ERASE_KEY);
     }
 
-    SECTION("deinitialization fails")
+    SECTION("hardware deinitialization fails")
     {
         mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -148,7 +148,7 @@ TEST_CASE("erase key")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("initialization fails")
+        SECTION("hardware initialization fails")
         {
             mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -172,7 +172,7 @@ TEST_CASE("erase key")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("deinitialization fails")
+        SECTION("hardware deinitialization fails")
         {
             mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -213,7 +213,7 @@ TEST_CASE("generate key")
         }
     }
 
-    SECTION("initialization fails")
+    SECTION("hardware initialization fails")
     {
         mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -231,7 +231,7 @@ TEST_CASE("generate key")
         REQUIRE(result == SystemStatus::HSM_ERROR_GENERATE_KEY);
     }
 
-    SECTION("deinitialization fails")
+    SECTION("hardware deinitialization fails")
     {
         mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -254,7 +254,7 @@ TEST_CASE("generate key")
                                                    "curve=" + curveToString(curve));
         }
 
-        SECTION("initialization fails")
+        SECTION("hardware initialization fails")
         {
             mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -282,7 +282,7 @@ TEST_CASE("generate key")
                                                    "curve=" + curveToString(curve));
         }
 
-        SECTION("deinitialization fails")
+        SECTION("hardware deinitialization fails")
         {
             mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -314,7 +314,7 @@ TEST_CASE("read key")
         REQUIRE(result == SystemStatus::OK);
     }
 
-    SECTION("initialization fails")
+    SECTION("hardware initialization fails")
     {
         mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -332,7 +332,7 @@ TEST_CASE("read key")
         REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY);
     }
 
-    SECTION("deinitialization fails")
+    SECTION("hardware deinitialization fails")
     {
         mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -353,7 +353,7 @@ TEST_CASE("read key")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("initialization fails")
+        SECTION("hardware initialization fails")
         {
             mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
@@ -365,7 +365,7 @@ TEST_CASE("read key")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("read key fails")
+        SECTION("reading key fails")
         {
             mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY;
 
@@ -377,7 +377,7 @@ TEST_CASE("read key")
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
-        SECTION("deinitialization fails")
+        SECTION("hardware deinitialization fails")
         {
             mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
@@ -387,6 +387,97 @@ TEST_CASE("read key")
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
+        }
+    }
+}
+
+TEST_CASE("list all keys")
+{
+    MockSecureElement mock;
+    MockAuditLogger mock_logger;
+    HsmManager hsm(mock, mock_logger);
+    std::vector<std::vector<uint8_t>> pubKeys;
+
+    SECTION("SUCCESS")
+    {
+        auto result = hsm.listKeys(pubKeys);
+
+        REQUIRE(result == SystemStatus::OK);
+    }
+
+    SECTION("hardware initialization fails")
+    {
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+        auto result = hsm.listKeys(pubKeys);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
+    }
+
+    SECTION("listing keys fails")
+    {
+        mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY;
+
+        auto result = hsm.listKeys(pubKeys);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY);
+    }
+
+    SECTION("hardware deinitialization fails")
+    {
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+        auto result = hsm.listKeys(pubKeys);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
+    }
+
+    SECTION("logging")
+    {
+        SECTION("success")
+        {
+            hsm.listKeys(pubKeys);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("hardware initialization fails")
+        {
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+            hsm.listKeys(pubKeys);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("listing keys fails")
+        {
+            mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY;
+
+            hsm.listKeys(pubKeys);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY);
+            REQUIRE(mock_logger.lastOptions == "");
+        }
+
+        SECTION("hardware deinitialization fails")
+        {
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+            hsm.listKeys(pubKeys);
+
+            REQUIRE(mock_logger.logCalled == true);
+            REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
+            REQUIRE(mock_logger.lastOptions == "");
         }
     }
 }

@@ -15,6 +15,7 @@ public:
     SystemStatus eraseKey(uint8_t slot) override;
     SystemStatus generateKey(uint8_t slot, Curve curve) override;
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;
+    SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys) override;
     SystemStatus deinit() override;
 
 private:

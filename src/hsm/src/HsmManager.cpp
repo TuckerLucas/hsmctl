@@ -96,12 +96,13 @@ SystemStatus HsmManager::generateKey(uint8_t slot, Curve curve)
 SystemStatus HsmManager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 {
     SystemStatus result;
+    std::string options = "slot=" + std::to_string(slot);
 
     result = m_se.init();
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::READ_KEY, result, options);
         return result;
     }
 
@@ -109,13 +110,41 @@ SystemStatus HsmManager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 
     if (result != SystemStatus::OK)
     {
-        m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
+        m_logger.log(Operation::READ_KEY, result, options);
         return result;
     }
 
     result = m_se.deinit();
 
-    m_logger.log(Operation::READ_KEY, result, "slot=" + std::to_string(slot));
+    m_logger.log(Operation::READ_KEY, result, options);
+
+    return result;
+}
+
+SystemStatus HsmManager::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
+{
+    SystemStatus result;
+    std::string options = "";
+
+    result = m_se.init();
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::LIST_KEYS, result, options);
+        return result;
+    }
+
+    result = m_se.listKeys(pubKeys);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::LIST_KEYS, result, options);
+        return result;
+    }
+
+    result = m_se.deinit();
+
+    m_logger.log(Operation::LIST_KEYS, result, options);
 
     return result;
 }

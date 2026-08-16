@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "CliParser.hpp"
+
+#include <iostream>
 
 Command CliParser::parseCommand(int argc, const char* argv[])
 {
@@ -315,6 +315,24 @@ Command CliParser::parseCommand(int argc, const char* argv[])
                 command.error = ParseError::INVALID_OPTION;
                 return command;
             }
+        }
+
+        return command;
+    }
+
+    if (operation == "list-keys")
+    {
+        command.operation = Operation::LIST_KEYS;
+
+        if (argc == 3 && std::string(argv[2]) == "--help")
+        {
+            command.requires_help = true;
+            return command;
+        }
+
+        if (argc > 2)
+        {
+            command.error = ParseError::INVALID_OPTION;
         }
 
         return command;
