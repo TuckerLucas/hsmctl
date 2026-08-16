@@ -143,18 +143,24 @@ void CliDisplay::generateKeyResult(SystemStatus result, Command command)
         std::cout << "Operation failed: ";
 
         if (result == SystemStatus::HSM_ERROR_INIT)
-            std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::HSM_ERROR_GENERATE_KEY)
         {
-            std::cout << "could not generate key.";
-            std::cout << "\n";
-            std::cout << "Slot " << command.options["slot"]
-                      << " may already contain a key. Run 'hsmctl erase-key --slot "
-                      << command.options["slot"] << "' to erase it first.";
-            std::cout << "\n";
+            std::cout << "initialisation error. Check that the security module is connected.\n";
+        }
+        else if (result == SystemStatus::HSM_ERROR_GENERATE_KEY_SLOT_OCCUPIED)
+        {
+            std::cout << "slot " << command.options["slot"] << " already contains a key.\n";
+            std::cout << "Run 'hsmctl erase-key --slot " << command.options["slot"]
+                      << "' to erase it first.\n";
+        }
+        else if (result == SystemStatus::HSM_ERROR_GENERATE_KEY_HW_ERROR)
+        {
+            std::cout << "hardware error generating key in slot " << command.options["slot"]
+                      << ".\n";
         }
         else if (result == SystemStatus::HSM_ERROR_DEINIT)
+        {
             std::cout << "deinitialisation error.\n";
+        }
     }
 }
 
@@ -188,18 +194,24 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
         std::cout << "Operation failed: ";
 
         if (result == SystemStatus::HSM_ERROR_INIT)
-            std::cout << "initialisation error. Check that the security module is connected.\n";
-        else if (result == SystemStatus::HSM_ERROR_READ_KEY)
         {
-            std::cout << "could not read key.";
+            std::cout << "initialisation error. Check that the security module is connected.\n";
+        }
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT)
+        {
+            std::cout << "slot " << static_cast<int>(slot) << " is empty.";
             std::cout << "\n";
-            std::cout << "Slot " << static_cast<int>(slot)
-                      << " may be empty. Run 'hsmctl generate-key --slot " << static_cast<int>(slot)
-                      << "' to generate a key first.";
-            std::cout << "\n";
+            std::cout << "Run 'hsmctl generate-key --slot " << static_cast<int>(slot)
+                      << "' to generate a key first.\n";
+        }
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR)
+        {
+            std::cout << "hardware error reading key from slot " << static_cast<int>(slot) << ".\n";
         }
         else if (result == SystemStatus::HSM_ERROR_DEINIT)
+        {
             std::cout << "deinitialisation error.\n";
+        }
     }
 }
 

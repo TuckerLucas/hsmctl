@@ -224,11 +224,11 @@ TEST_CASE("generate key")
 
     SECTION("generating key fails")
     {
-        mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY;
+        mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY_SLOT_OCCUPIED;
 
         auto result = hsm.generateKey(slot, curve);
 
-        REQUIRE(result == SystemStatus::HSM_ERROR_GENERATE_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_GENERATE_KEY_SLOT_OCCUPIED);
     }
 
     SECTION("hardware deinitialization fails")
@@ -270,13 +270,13 @@ TEST_CASE("generate key")
 
         SECTION("generating key fails")
         {
-            mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY;
+            mock.generateKeyResult = SystemStatus::HSM_ERROR_GENERATE_KEY_HW_ERROR;
 
             hsm.generateKey(slot, curve);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_GENERATE_KEY);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_GENERATE_KEY_HW_ERROR);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
                                                    (slot < 10 ? "  " : " ") +
                                                    "curve=" + curveToString(curve));
@@ -325,11 +325,11 @@ TEST_CASE("read key")
 
     SECTION("reading key fails")
     {
-        mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY;
+        mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
 
         auto result = hsm.readKey(slot, pubKey);
 
-        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
     }
 
     SECTION("hardware deinitialization fails")
@@ -367,13 +367,13 @@ TEST_CASE("read key")
 
         SECTION("reading key fails")
         {
-            mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY;
+            mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
 
             hsm.readKey(slot, pubKey);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::READ_KEY);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR);
             REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot));
         }
 
