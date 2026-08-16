@@ -416,11 +416,11 @@ TEST_CASE("list all keys")
 
     SECTION("listing keys fails")
     {
-        mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY;
+        mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
 
         auto result = hsm.listKeys(pubKeys);
 
-        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY);
+        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
     }
 
     SECTION("hardware deinitialization fails")
@@ -458,13 +458,13 @@ TEST_CASE("list all keys")
 
         SECTION("listing keys fails")
         {
-            mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY;
+            mock.listKeysResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
 
             hsm.listKeys(pubKeys);
 
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
-            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY);
+            REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR);
             REQUIRE(mock_logger.lastOptions == "");
         }
 

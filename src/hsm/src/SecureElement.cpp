@@ -135,6 +135,36 @@ SystemStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
 
 SystemStatus SecureElement::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
 {
+    uint8_t raw_key[64];
+    lt_ecc_curve_type_t curve;
+    lt_ecc_key_origin_t origin;
+    lt_ret_t ret;
+    int key_len;
+    pubKeys.resize(32);
+
+    for (uint8_t i = 0; i < 32; i++)
+    {
+        ret = lt_ecc_key_read(&m_impl->handle, static_cast<lt_ecc_slot_t>(i), raw_key,
+                              sizeof(raw_key), &curve, &origin);
+
+        if (ret != LT_OK)
+        {
+            if (ret == LT_L3_INVALID_KEY)
+            {
+                continue;
+            }
+            else
+            {
+                deinit();
+                return SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
+            }
+        }
+
+        key_len = (curve == TR01_CURVE_ED25519) ? 32 : 64;
+
+        pubKeys.at(i).assign(raw_key, raw_key + key_len);
+    }
+
     return SystemStatus::OK;
 }
 
