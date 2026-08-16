@@ -1,5 +1,7 @@
 #include "SecureElement.hpp"
 
+#include <iostream>
+
 #include "libtropic.h"
 #include "libtropic_common.h"
 #include "libtropic_mbedtls_v4.h"
@@ -74,9 +76,7 @@ SystemStatus SecureElement::status()
 
     if (lt_ping(&m_impl->handle, (const uint8_t*)PING_MSG, recv_buf, PING_MSG_SIZE) != LT_OK)
     {
-        lt_session_abort(&m_impl->handle);
-        lt_deinit(&m_impl->handle);
-        mbedtls_psa_crypto_free();
+        deinit();
         return SystemStatus::HSM_ERROR_STATUS;
     }
 
@@ -87,9 +87,7 @@ SystemStatus SecureElement::eraseKey(uint8_t slot)
 {
     if (lt_ecc_key_erase(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot)) != LT_OK)
     {
-        lt_session_abort(&m_impl->handle);
-        lt_deinit(&m_impl->handle);
-        mbedtls_psa_crypto_free();
+        deinit();
         return SystemStatus::HSM_ERROR_ERASE_KEY;
     }
 
@@ -100,12 +98,13 @@ SystemStatus SecureElement::generateKey(uint8_t slot, Curve curve)
 {
     lt_ecc_curve_type_t lt_curve = (curve == Curve::P256) ? TR01_CURVE_P256 : TR01_CURVE_ED25519;
 
-    if (lt_ecc_key_generate(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), lt_curve) != LT_OK)
+    lt_ret_t ret = lt_ecc_key_generate(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), lt_curve);
+
+    if (ret != LT_OK)
     {
-        lt_session_abort(&m_impl->handle);
-        lt_deinit(&m_impl->handle);
-        mbedtls_psa_crypto_free();
-        return SystemStatus::HSM_ERROR_GENERATE_KEY;
+        deinit();
+        return (ret == LT_L3_FAIL) ? SystemStatus::HSM_ERROR_GENERATE_KEY_SLOT_OCCUPIED
+                                   : SystemStatus::HSM_ERROR_GENERATE_KEY_HW_ERROR;
     }
 
     return SystemStatus::OK;
@@ -117,14 +116,14 @@ SystemStatus SecureElement::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
     lt_ecc_curve_type_t curve;
     lt_ecc_key_origin_t origin;
 
-    if (lt_ecc_key_read(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), raw_key, sizeof(raw_key),
-                        &curve, &origin) != LT_OK)
-    {
-        lt_session_abort(&m_impl->handle);
-        lt_deinit(&m_impl->handle);
-        mbedtls_psa_crypto_free();
+    lt_ret_t ret = lt_ecc_key_read(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), raw_key,
+                                   sizeof(raw_key), &curve, &origin);
 
-        return SystemStatus::HSM_ERROR_READ_KEY;
+    if (ret != LT_OK)
+    {
+        deinit();
+        return (ret == LT_L3_INVALID_KEY) ? SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT
+                                          : SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
     }
 
     int key_len = (curve == TR01_CURVE_ED25519) ? 32 : 64;
