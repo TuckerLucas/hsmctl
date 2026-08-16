@@ -14,6 +14,7 @@ public:
     SystemStatus eraseKeyResult = SystemStatus::OK;
     SystemStatus generateKeyResult = SystemStatus::OK;
     SystemStatus readKeyResult = SystemStatus::OK;
+    SystemStatus listKeysResult = SystemStatus::OK;
     SystemStatus deinitResult = SystemStatus::OK;
 
     Curve lastCurve = Curve::Ed25519;
@@ -44,6 +45,11 @@ public:
         pubKey = mock_public_key;
 
         return readKeyResult;
+    }
+
+    SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys) override
+    {
+        return listKeysResult;
     }
 
     SystemStatus deinit() override

@@ -19,6 +19,8 @@ void CliDisplay::helpMenu()
     std::cout << "                     logs           Display HSM audit logs.\n";
     std::cout << "                     erase-key      Erase a key.\n";
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
+    std::cout << "                     read-key       Read a public key.\n";
+    std::cout << "                     list-keys      Read all existing public keys.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
@@ -211,6 +213,55 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
             std::cout << "deinitialisation error.\n";
         }
     }
+}
+
+void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uint8_t>> pubKeys)
+{
+    if (result != SystemStatus::OK)
+    {
+        std::cout << "Error reading keys\n";
+        return;
+    }
+
+    int occupied = 0;
+    for (size_t i = 0; i < pubKeys.size(); i++)
+    {
+        if (!pubKeys[i].empty())
+            occupied++;
+    }
+
+    if (occupied == 0)
+    {
+        std::cout << "\nNo keys found.\n\n";
+        return;
+    }
+
+    std::cout << "\n";
+    std::cout << std::string(60, '-') << "\n";
+    std::cout << std::left << std::setw(8) << "Slot" << std::setw(10) << "Curve"
+              << "Public Key\n";
+    std::cout << std::string(60, '-') << "\n";
+
+    for (size_t i = 0; i < pubKeys.size(); i++)
+    {
+        if (pubKeys[i].empty())
+            continue;
+
+        std::string curve = (pubKeys[i].size() == 32) ? "Ed25519" : "P-256";
+
+        std::cout << std::left << std::setw(8) << i << std::setw(10) << curve;
+
+        for (size_t j = 0; j < pubKeys[i].size(); j++)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0')
+                      << static_cast<int>(pubKeys[i][j]);
+        }
+
+        std::cout << std::dec << std::setfill(' ') << "\n";
+    }
+
+    std::cout << std::string(60, '-') << "\n";
+    std::cout << occupied << " key(s) found\n\n";
 }
 
 void CliDisplay::status_help()

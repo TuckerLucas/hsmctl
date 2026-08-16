@@ -19,6 +19,7 @@ public:
     void eraseKeyResult(SystemStatus result, uint8_t slot);
     void generateKeyResult(SystemStatus result, Command command);
     void readKeyResult(SystemStatus result, uint8_t slot, std::vector<uint8_t> pubKey);
+    void listKeysResult(SystemStatus result, std::vector<std::vector<uint8_t>> pubKeys);
 
     // operation specific help menu functions
     void operationHelpMenu(Operation op);

@@ -93,6 +93,24 @@ TEST_CASE("audit logger")
                     REQUIRE(entries[0].auditResult == "FAILED");
                     REQUIRE(entries[0].options == "slot=2");
                 }
+
+                SECTION("list all keys")
+                {
+                    auto write_result =
+                        logger.log(Operation::LIST_KEYS, SystemStatus::HSM_ERROR_DEINIT, "");
+
+                    REQUIRE(write_result == SystemStatus::OK);
+
+                    std::vector<AuditEntry> entries;
+                    auto read_result = logger.fetch(entries);
+
+                    REQUIRE(read_result == SystemStatus::OK);
+                    REQUIRE(entries.size() == 1);
+                    REQUIRE(entries[0].timestamp != "");
+                    REQUIRE(entries[0].operation == "list-keys");
+                    REQUIRE(entries[0].auditResult == "FAILED");
+                    REQUIRE(entries[0].options == "");
+                }
             }
 
             SECTION("multiple entries preserve order")
