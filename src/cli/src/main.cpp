@@ -95,7 +95,7 @@ int main(int argc, const char* argv[])
 
             result = hsm.listKeys(pubKeys);
 
-            display.listKeysResult(result, pubKeys);
+            display.listKeysResult(result, command, pubKeys);
 
             break;
         }
