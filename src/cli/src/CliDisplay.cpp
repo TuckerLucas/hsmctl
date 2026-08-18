@@ -19,8 +19,8 @@ void CliDisplay::helpMenu()
     std::cout << "                     logs           Display HSM audit logs.\n";
     std::cout << "                     erase-key      Erase a key.\n";
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
-    std::cout << "                     read-key       Read a public key.\n";
-    std::cout << "                     list-keys      Read all existing public keys.\n";
+    std::cout << "                     read-key       Read back a public key.\n";
+    std::cout << "                     list-keys      List all public keys stored on the HSM.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
@@ -181,9 +181,13 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
                       << static_cast<int>(pubKey[i]);
 
             if ((i + 1) % 16 == 0)
+            {
                 std::cout << "\n";
+            }
             else
+            {
                 std::cout << " ";
+            }
         }
 
         std::cout << std::string(60, '-') << "\n";
@@ -215,7 +219,8 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
     }
 }
 
-void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uint8_t>> pubKeys)
+void CliDisplay::listKeysResult(SystemStatus result, Command command,
+                                std::vector<std::vector<uint8_t>> pubKeys)
 {
     if (result != SystemStatus::OK)
     {
@@ -227,7 +232,9 @@ void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uin
     for (size_t i = 0; i < pubKeys.size(); i++)
     {
         if (!pubKeys[i].empty())
+        {
             occupied++;
+        }
     }
 
     if (occupied == 0)
@@ -236,6 +243,7 @@ void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uin
         return;
     }
 
+    // TODO: Decide if 60 char separator is enough when verbose is used
     std::cout << "\n";
     std::cout << std::string(60, '-') << "\n";
     std::cout << std::left << std::setw(8) << "Slot" << std::setw(10) << "Curve"
@@ -245,16 +253,37 @@ void CliDisplay::listKeysResult(SystemStatus result, std::vector<std::vector<uin
     for (size_t i = 0; i < pubKeys.size(); i++)
     {
         if (pubKeys[i].empty())
+        {
             continue;
+        }
 
         std::string curve = (pubKeys[i].size() == 32) ? "Ed25519" : "P-256";
 
-        std::cout << std::left << std::setw(8) << i << std::setw(10) << curve;
+        std::cout << std::left << std::setw(8) << i << std::setw(10) << curve << std::right;
 
-        for (size_t j = 0; j < pubKeys[i].size(); j++)
+        if (command.options["verbose"] == "true")
         {
-            std::cout << std::hex << std::setw(2) << std::setfill('0')
-                      << static_cast<int>(pubKeys[i][j]);
+            for (size_t j = 0; j < pubKeys[i].size(); j++)
+            {
+                std::cout << std::hex << std::setw(2) << std::setfill('0')
+                          << static_cast<int>(pubKeys[i][j]);
+            }
+        }
+        else
+        {
+            std::ostringstream truncated{};
+
+            for (size_t j = 0; j < 8 && j < pubKeys[i].size(); j++)
+                truncated << std::hex << std::setw(2) << std::setfill('0')
+                          << static_cast<int>(pubKeys[i][j]);
+
+            truncated << "...";
+
+            for (size_t j = pubKeys[i].size() - 4; j < pubKeys[i].size(); j++)
+                truncated << std::hex << std::setw(2) << std::setfill('0')
+                          << static_cast<int>(pubKeys[i][j]);
+
+            std::cout << truncated.str();
         }
 
         std::cout << std::dec << std::setfill(' ') << "\n";
@@ -344,6 +373,22 @@ void CliDisplay::readKey_help()
     std::cout << "        hsmctl read-key --slot 31\n";
 }
 
+void CliDisplay::listKeys_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl list-keys\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "        Display all public keys stored on the HSM.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --verbose   Show complete key values.\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl list-keys\n";
+    std::cout << "        hsmctl list-keys --verbose\n";
+}
+
 void CliDisplay::operationHelpMenu(Operation op)
 {
     switch (op)
@@ -362,6 +407,9 @@ void CliDisplay::operationHelpMenu(Operation op)
             break;
         case Operation::READ_KEY:
             readKey_help();
+            break;
+        case Operation::LIST_KEYS:
+            listKeys_help();
             break;
         default:
             assert(false && "Unhandled operation value in operationHelpMenu");

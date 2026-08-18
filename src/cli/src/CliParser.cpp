@@ -332,7 +332,14 @@ Command CliParser::parseCommand(int argc, const char* argv[])
 
         if (argc > 2)
         {
-            command.error = ParseError::INVALID_OPTION;
+            if (argc == 3 && std::string(argv[2]) == "--verbose")
+            {
+                command.options["verbose"] = "true";
+            }
+            else
+            {
+                command.error = ParseError::INVALID_OPTION;
+            }
         }
 
         return command;

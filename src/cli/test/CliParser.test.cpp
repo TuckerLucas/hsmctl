@@ -660,34 +660,76 @@ TEST_CASE("CliParser parseCommand")
     {
         SECTION("success")
         {
-            const char* argv[] = {"hsmctl", "list-keys"};
+            SECTION("unspecified verbosity")
+            {
+                const char* argv[] = {"hsmctl", "list-keys"};
 
-            auto parsed_command = parser.parseCommand(2, argv);
+                auto parsed_command = parser.parseCommand(2, argv);
 
-            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
-            REQUIRE(parsed_command.error == ParseError::NONE);
-            REQUIRE(parsed_command.requires_help == false);
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.error == ParseError::NONE);
+                REQUIRE(parsed_command.requires_help == false);
+            }
+
+            SECTION("specified verbosity")
+            {
+                const char* argv[] = {"hsmctl", "list-keys", "--verbose"};
+
+                auto parsed_command = parser.parseCommand(3, argv);
+
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.requires_help == false);
+                REQUIRE(parsed_command.options["verbose"] == "true");
+                REQUIRE(parsed_command.error == ParseError::NONE);
+            }
         }
 
         SECTION("help")
         {
-            const char* argv[] = {"hsmctl", "list-keys", "--help"};
+            SECTION("success")
+            {
+                const char* argv[] = {"hsmctl", "list-keys", "--help"};
 
-            auto parsed_command = parser.parseCommand(3, argv);
+                auto parsed_command = parser.parseCommand(3, argv);
 
-            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
-            REQUIRE(parsed_command.error == ParseError::NONE);
-            REQUIRE(parsed_command.requires_help);
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.error == ParseError::NONE);
+                REQUIRE(parsed_command.requires_help);
+            }
+
+            SECTION("trailing garbage")
+            {
+                const char* argv[] = {"hsmctl", "list-keys", "--help", "garbage"};
+
+                auto parsed_command = parser.parseCommand(4, argv);
+
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+                REQUIRE(parsed_command.requires_help == false);
+            }
         }
 
         SECTION("invalid option")
         {
-            const char* argv[] = {"hsmctl", "list-keys", "--some-option"};
+            SECTION("unknown option")
+            {
+                const char* argv[] = {"hsmctl", "list-keys", "--some-option"};
 
-            auto parsed_command = parser.parseCommand(3, argv);
+                auto parsed_command = parser.parseCommand(3, argv);
 
-            REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
-            REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
+
+            SECTION("trailing garbage after valid command")
+            {
+                const char* argv[] = {"hsmctl", "list-keys", "--verbose", "garbage"};
+
+                auto parsed_command = parser.parseCommand(4, argv);
+
+                REQUIRE(parsed_command.operation == Operation::LIST_KEYS);
+                REQUIRE(parsed_command.error == ParseError::INVALID_OPTION);
+            }
         }
     }
 }

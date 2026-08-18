@@ -398,7 +398,7 @@ TEST_CASE("list all keys")
     HsmManager hsm(mock, mock_logger);
     std::vector<std::vector<uint8_t>> pubKeys;
 
-    SECTION("SUCCESS")
+    SECTION("success")
     {
         auto result = hsm.listKeys(pubKeys);
 
