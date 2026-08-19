@@ -21,6 +21,7 @@ public:
     void readKeyResult(SystemStatus result, uint8_t slot, std::vector<uint8_t> pubKey);
     void listKeysResult(SystemStatus result, Command command,
                         std::vector<std::vector<uint8_t>> pubKeys);
+    void signResult(SystemStatus result, std::vector<uint8_t> signature);
 
     // operation specific help menu functions
     void operationHelpMenu(Operation op);
@@ -31,4 +32,5 @@ public:
     void generateKey_help();
     void readKey_help();
     void listKeys_help();
+    void sign_help();
 };

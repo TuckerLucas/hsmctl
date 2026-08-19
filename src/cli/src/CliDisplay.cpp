@@ -21,6 +21,8 @@ void CliDisplay::helpMenu()
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
     std::cout << "                     read-key       Read back a public key.\n";
     std::cout << "                     list-keys      List all public keys stored on the HSM.\n";
+    std::cout
+        << "                     sign           Sign data/file using a hardware backed key.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
@@ -293,6 +295,41 @@ void CliDisplay::listKeysResult(SystemStatus result, Command command,
     std::cout << occupied << " key(s) found\n\n";
 }
 
+void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
+{
+    if (result == SystemStatus::OK)
+    {
+        std::cout << "\nSignature:\n";
+        std::cout << std::string(60, '-') << "\n";
+
+        for (size_t i = 0; i < signature.size(); i++)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0')
+                      << static_cast<int>(signature[i]);
+
+            if ((i + 1) % 16 == 0)
+                std::cout << "\n";
+        }
+
+        std::cout << std::dec << std::setfill(' ');
+        std::cout << std::string(60, '-') << "\n";
+        std::cout << "Signature length: " << signature.size() << " bytes\n\n";
+    }
+    else
+    {
+        std::cout << "Operation failed: ";
+
+        if (result == SystemStatus::ERROR_FILE_NOT_FOUND)
+            std::cout << "file not found. Check the path and try again.\n";
+        else if (result == SystemStatus::HSM_ERROR_INIT)
+            std::cout << "initialisation error. Check that the secure element is connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_SIGN)
+            std::cout << "signing failed. Check that a key exists in the specified slot.\n";
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
+            std::cout << "deinitialisation error.\n";
+    }
+}
+
 void CliDisplay::status_help()
 {
     std::cout << "Usage:\n";
@@ -389,6 +426,29 @@ void CliDisplay::listKeys_help()
     std::cout << "        hsmctl list-keys --verbose\n";
 }
 
+void CliDisplay::sign_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl sign --slot <slot> --data <data>\n";
+    std::cout << "        hsmctl sign --slot <slot> --file <path>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout << "        Sign data or a file using a hardware-backed key stored in the specified "
+                 "slot.\n";
+    std::cout << "        The private key never leaves the HSM.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --slot <0-31>   Slot containing the key to sign with (required).\n";
+    std::cout << "        --data <data>   Data string to sign (mutually exclusive with --file).\n";
+    std::cout << "        --file <path>   Path to file to sign (mutually exclusive with --data).\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl sign --slot 0 --data \"hello\"\n";
+    std::cout << "        hsmctl sign --slot 15 --file document.pdf\n";
+    std::cout << "        hsmctl sign --data \"hello\" --slot 20\n";
+    std::cout << "        hsmctl sign --file document.pdf --slot 12\n";
+}
+
 void CliDisplay::operationHelpMenu(Operation op)
 {
     switch (op)
@@ -410,6 +470,9 @@ void CliDisplay::operationHelpMenu(Operation op)
             break;
         case Operation::LIST_KEYS:
             listKeys_help();
+            break;
+        case Operation::SIGN:
+            sign_help();
             break;
         default:
             assert(false && "Unhandled operation value in operationHelpMenu");

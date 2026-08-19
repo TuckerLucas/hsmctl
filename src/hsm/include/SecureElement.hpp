@@ -16,6 +16,8 @@ public:
     SystemStatus generateKey(uint8_t slot, Curve curve) override;
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) override;
     SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys) override;
+    SystemStatus sign(uint8_t slot, std::vector<uint8_t> payload,
+                      std::vector<uint8_t>& signature) override;
     SystemStatus deinit() override;
 
 private:

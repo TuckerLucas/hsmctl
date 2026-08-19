@@ -44,6 +44,7 @@ sudo make install
 | `erase-key` | Erase the key stored in a slot | `--slot <0-31>` |
 | `read-key` | Read back the public key from a slot | `--slot <0-31>` |
 | `list-keys` | List all public keys stored on the HSM | `[--verbose]` |
+| `sign` | Sign data or a file using a hardware backed key | `--slot <0-31>` `<--data <data> \| --file <path>>` |
 
 ### Quick start
 
@@ -68,6 +69,15 @@ hsmctl erase-key --slot 0
 
 # List all public keys stored on the HSM
 hsmctl list-keys
+
+# Sign a message using the key in slot 29
+hsmctl sign --slot 29 --data "hello"
+
+# Create a sample file to sign 
+echo "hello hsmctl" > sample.txt
+
+# Sign the file using the key in slot 29
+hsmctl sign --slot 29 --file sample.txt
 
 # View the audit log
 hsmctl logs
@@ -98,13 +108,15 @@ Timestamp             Operation      Result    Options
 2026-08-18 10:41:23   generate-key   SUCCESS   slot=29 curve=ed25519
 2026-08-18 10:41:49   read-key       SUCCESS   slot=0              
 2026-08-18 10:42:08   erase-key      SUCCESS   slot=0              
-2026-08-18 10:42:28   list-keys      SUCCESS                       
+2026-08-18 10:42:28   list-keys      SUCCESS
+2026-08-18 10:42:45   sign           SUCCESS   slot=29 type=data   
+2026-08-18 10:43:01   sign           SUCCESS   slot=29 type=file path=sample.txt               
 ---------------------------------------------------------------------------
-7 operations logged
+9 operations logged
 ```
 
 ## Roadmap
 
-**Coming soon:** `sign`, and `verify` commands.
+**Coming soon:** `verify` operation.
 
 **Longer term:** multi-device support for additional HSM hardware.

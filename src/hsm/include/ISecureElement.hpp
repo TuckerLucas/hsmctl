@@ -15,6 +15,8 @@ public:
     virtual SystemStatus generateKey(uint8_t slot, Curve curve) = 0;
     virtual SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey) = 0;
     virtual SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys) = 0;
+    virtual SystemStatus sign(uint8_t slot, std::vector<uint8_t> payload,
+                              std::vector<uint8_t>& signature) = 0;
     virtual SystemStatus deinit() = 0;
 
     virtual ~ISecureElement() = default;

@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "AuditTypes.hpp"
-#include "Operation.hpp"
 #include "SystemStatus.hpp"
+#include "Types.hpp"
 
 class IAuditLogger
 {

@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "Operation.hpp"
+#include "Types.hpp"
 
 #define MIN_SLOT 0
 #define MAX_SLOT 31

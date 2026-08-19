@@ -100,7 +100,7 @@ TEST_CASE("erase key")
     MockSecureElement mock;
     MockAuditLogger mock_logger;
     HsmManager hsm(mock, mock_logger);
-    uint8_t slot;
+    uint8_t slot = 29;
 
     SECTION("success")
     {
@@ -191,7 +191,7 @@ TEST_CASE("generate key")
     MockSecureElement mock;
     MockAuditLogger mock_logger;
     HsmManager hsm(mock, mock_logger);
-    uint8_t slot;
+    uint8_t slot = 6;
     Curve curve = Curve::P256;
 
     SECTION("success")
@@ -249,9 +249,7 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
-                                                   (slot < 10 ? "  " : " ") +
-                                                   "curve=" + curveToString(curve));
+            REQUIRE(mock_logger.lastOptions == "slot=6  curve=p256");
         }
 
         SECTION("hardware initialization fails")
@@ -263,9 +261,7 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
-                                                   (slot < 10 ? "  " : " ") +
-                                                   "curve=" + curveToString(curve));
+            REQUIRE(mock_logger.lastOptions == "slot=6  curve=p256");
         }
 
         SECTION("generating key fails")
@@ -277,9 +273,7 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_GENERATE_KEY_HW_ERROR);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
-                                                   (slot < 10 ? "  " : " ") +
-                                                   "curve=" + curveToString(curve));
+            REQUIRE(mock_logger.lastOptions == "slot=6  curve=p256");
         }
 
         SECTION("hardware deinitialization fails")
@@ -291,9 +285,7 @@ TEST_CASE("generate key")
             REQUIRE(mock_logger.logCalled == true);
             REQUIRE(mock_logger.lastOperation == Operation::GENERATE_KEY);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
-            REQUIRE(mock_logger.lastOptions == "slot=" + std::to_string(slot) +
-                                                   (slot < 10 ? "  " : " ") +
-                                                   "curve=" + curveToString(curve));
+            REQUIRE(mock_logger.lastOptions == "slot=6  curve=p256");
         }
     }
 }
@@ -303,7 +295,7 @@ TEST_CASE("read key")
     MockSecureElement mock;
     MockAuditLogger mock_logger;
     HsmManager hsm(mock, mock_logger);
-    uint8_t slot;
+    uint8_t slot = 8;
     std::vector<uint8_t> pubKey;
 
     SECTION("success")
@@ -478,6 +470,170 @@ TEST_CASE("list all keys")
             REQUIRE(mock_logger.lastOperation == Operation::LIST_KEYS);
             REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
             REQUIRE(mock_logger.lastOptions == "");
+        }
+    }
+}
+
+TEST_CASE("sign")
+{
+    MockSecureElement mock;
+    MockAuditLogger mock_logger;
+    HsmManager hsm(mock, mock_logger);
+    uint8_t slot = 15;
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> signature;
+    SignSource signSource = SignSource::DATA;
+    std::string filepath;
+
+    SECTION("success")
+    {
+        SECTION("data")
+        {
+            auto result = hsm.sign(slot, payload, signature, SignSource::DATA);
+
+            REQUIRE(signature == mock_signature);
+            REQUIRE(result == SystemStatus::OK);
+        }
+
+        SECTION("file")
+        {
+            auto result = hsm.sign(slot, payload, signature, SignSource::FILE, filepath);
+
+            REQUIRE(signature == mock_signature);
+            REQUIRE(result == SystemStatus::OK);
+        }
+    }
+
+    SECTION("hardware initialization fails")
+    {
+        mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+        auto result = hsm.sign(slot, payload, signature, signSource);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
+    }
+
+    SECTION("signing fails")
+    {
+        mock.signResult = SystemStatus::HSM_ERROR_SIGN;
+
+        auto result = hsm.sign(slot, payload, signature, signSource);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_SIGN);
+    }
+
+    SECTION("hardware deinitialization fails")
+    {
+        mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+        auto result = hsm.sign(slot, payload, signature, signSource);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
+    }
+
+    SECTION("logging")
+    {
+        SECTION("data")
+        {
+            signSource = SignSource::DATA;
+
+            SECTION("success")
+            {
+                hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+
+            SECTION("hardware initialization fails")
+            {
+                mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+                hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+
+            SECTION("signing fails")
+            {
+                mock.signResult = SystemStatus::HSM_ERROR_SIGN;
+
+                hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_SIGN);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+
+            SECTION("deinit fails")
+            {
+                mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+                hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+        }
+
+        SECTION("file")
+        {
+            signSource = SignSource::FILE;
+            filepath = "filepath/file.txt";
+
+            SECTION("success")
+            {
+                hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+
+            SECTION("hardware initialization fails")
+            {
+                mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+                hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+
+            SECTION("signing fails")
+            {
+                mock.signResult = SystemStatus::HSM_ERROR_SIGN;
+
+                hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_SIGN);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+
+            SECTION("deinit fails")
+            {
+                mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+                hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
         }
     }
 }
