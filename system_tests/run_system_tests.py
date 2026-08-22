@@ -58,70 +58,70 @@ print("Ready.\n")
 run_test("help menu", [BINARY, "--help"])
 
 # Status
-run_test("status:", [BINARY, "status", "--help"])
+run_test("status - help", [BINARY, "status", "--help"])
 run_test("status", [BINARY, "status"])
 
 # Logs
-run_test("logs: help", [BINARY, "logs", "--help"])
+run_test("logs - help", [BINARY, "logs", "--help"])
 run_test("logs", [BINARY, "logs"])
 
 # Erase key
-run_test("erase key: help", [BINARY, "erase-key", "--help"])
+run_test("erase key - help", [BINARY, "erase-key", "--help"])
 run_test("erase key", [BINARY, "erase-key", "--slot", "1"])
 
 # Generate key
-run_test("generate key: help", [BINARY, "generate-key", "--help"])
+run_test("generate key - help", [BINARY, "generate-key", "--help"])
 
-run_test("generate key: unspecified curve",
+run_test("generate key - unspecified curve",
          [BINARY, "generate-key", "--slot", "1"],
          cleanup=[BINARY, "erase-key", "--slot", "1"])
 
-run_test("generate key: Ed25519 curve",
+run_test("generate key - Ed25519 curve",
          [BINARY, "generate-key", "--slot", "2", "--curve", "ed25519"],
          cleanup=[BINARY, "erase-key", "--slot", "2"])
 
-run_test("generate key: NIST P-256 curve",
+run_test("generate key - NIST P-256 curve",
          [BINARY, "generate-key", "--slot", "3", "--curve", "p256"],
          cleanup=[BINARY, "erase-key", "--slot", "3"])
 
-run_test("generate key: curve specified first",
+run_test("generate key - curve specified first",
          [BINARY, "generate-key", "--curve", "p256", "--slot", "3"],
          cleanup=[BINARY, "erase-key", "--slot", "3"])   
 
-run_test("generate key: occupied slot",
+run_test("generate key - occupied slot",
          [BINARY, "generate-key", "--slot", "10"],
          setup=[BINARY, "generate-key", "--slot", "10"],
          cleanup=[BINARY, "erase-key", "--slot", "10"],
          expected_exit_code=1)
 
 # Read key
-run_test("read key: help", [BINARY, "read-key", "--help"])
+run_test("read key - help", [BINARY, "read-key", "--help"])
 
-run_test("read key: Ed25519",
+run_test("read key - Ed25519",
          [BINARY, "read-key", "--slot", "17"],
          setup=[BINARY, "generate-key", "--slot", "17"],
          cleanup=[BINARY, "erase-key", "--slot", "17"])
 
-run_test("read key: NIST P-256",
+run_test("read key - NIST P-256",
          [BINARY, "read-key", "--slot", "25"],
          setup=[BINARY, "generate-key", "--slot", "25", "--curve", "p256"],
          cleanup=[BINARY, "erase-key", "--slot", "25"])
 
-run_test("read key: empty slot",
+run_test("read key - empty slot",
          [BINARY, "read-key", "--slot", "10"],
          expected_exit_code=1)
 
 # List all keys
-run_test("list all keys: help", [BINARY, "list-keys", "--help"])
+run_test("list all keys - help", [BINARY, "list-keys", "--help"])
 
-run_test("list all keys: no keys", [BINARY, "list-keys"])
+run_test("list all keys - no keys", [BINARY, "list-keys"])
 
-run_test("list all keys: one key",
+run_test("list all keys - one key",
          [BINARY, "list-keys"],
          setup=[BINARY, "generate-key", "--slot", "5"],
          cleanup=[BINARY, "erase-key", "--slot", "5"])
 
-run_test("list all keys: multiple keys",
+run_test("list all keys - multiple keys",
          [BINARY, "list-keys"],
          setup=[
              [BINARY, "generate-key", "--slot", "5"],
@@ -134,7 +134,7 @@ run_test("list all keys: multiple keys",
              [BINARY, "erase-key", "--slot", "7"],
          ])
 
-run_test("list all keys: verbose",
+run_test("list all keys - verbose",
          [BINARY, "list-keys", "--verbose"],
                   setup=[
              [BINARY, "generate-key", "--slot", "6"],
@@ -144,5 +144,24 @@ run_test("list all keys: verbose",
              [BINARY, "erase-key", "--slot", "6"],
              [BINARY, "erase-key", "--slot", "7"],
          ])
+
+# Sign
+run_test("sign - help", [BINARY, "sign", "--help"])
+
+run_test("sign - data",
+         [BINARY, "sign", "--slot", "18", "--data", "hello"],
+         setup=[BINARY, "generate-key", "--slot", "18"],
+         cleanup=[BINARY, "erase-key", "--slot", "18"])
+
+run_test("sign - file",
+         [BINARY, "sign", "--slot", "19", "--file", "test_file.txt"],
+         setup=[BINARY, "generate-key", "--slot", "19"],
+         cleanup=[BINARY, "erase-key", "--slot", "19"])
+
+run_test("sign - file not found",
+         [BINARY, "sign", "--slot", "23", "--file", "nonexistent.txt"],
+         setup=[BINARY, "generate-key", "--slot", "23"],
+         cleanup=[BINARY, "erase-key", "--slot", "23"],
+         expected_exit_code=1)
 
 print("")    

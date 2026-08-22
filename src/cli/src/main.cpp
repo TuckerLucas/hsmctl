@@ -1,5 +1,7 @@
 #include <sys/stat.h>
 
+#include <fstream>
+
 #include "AuditLogger.hpp"
 #include "CliDisplay.hpp"
 #include "CliParser.hpp"
@@ -96,6 +98,47 @@ int main(int argc, const char* argv[])
             result = hsm.listKeys(pubKeys);
 
             display.listKeysResult(result, command, pubKeys);
+
+            break;
+        }
+        // TODO: Hash the payload contents before signing
+        case Operation::SIGN:
+        {
+            uint8_t slot = std::stoi(command.options["slot"]);
+            std::vector<uint8_t> payload;
+            std::vector<uint8_t> signature;
+            SignSource signSource;
+            std::string filepath = "";
+
+            if (command.options.count("data") > 0)
+            {
+                signSource = SignSource::DATA;
+                std::string data = command.options["data"];
+                payload = std::vector<uint8_t>(data.begin(), data.end());
+            }
+            else
+            {
+                signSource = SignSource::FILE;
+                filepath = command.options["file"];
+                std::ifstream file(filepath, std::ios::binary);
+
+                if (!file.is_open())
+                {
+                    display.signResult(SystemStatus::ERROR_FILE_NOT_FOUND, {});
+                    return 1;
+                }
+
+                payload = std::vector<uint8_t>(std::istreambuf_iterator<char>(file),
+                                               std::istreambuf_iterator<char>());
+
+                // Added for safety
+                // Should already be handled by RAII
+                file.close();
+            }
+
+            result = hsm.sign(slot, payload, signature, signSource, filepath);
+
+            display.signResult(result, signature);
 
             break;
         }

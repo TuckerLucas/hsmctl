@@ -3,6 +3,9 @@
 enum class SystemStatus
 {
     OK,
+    NOK,
+
+    ERROR_FILE_NOT_FOUND,
 
     HSM_ERROR_INIT,
     HSM_ERROR_STATUS,
@@ -11,11 +14,10 @@ enum class SystemStatus
     HSM_ERROR_GENERATE_KEY_HW_ERROR,
     HSM_ERROR_READ_KEY_EMPTY_SLOT,
     HSM_ERROR_READ_KEY_HW_ERROR,
+    HSM_ERROR_SIGN,
     HSM_ERROR_DEINIT,
 
     AUDIT_ERROR_DB_OPEN,
     AUDIT_ERROR_DB_READ,
     AUDIT_ERROR_DB_WRITE,
-
-    NOK,
 };

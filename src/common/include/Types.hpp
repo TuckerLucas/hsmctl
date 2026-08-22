@@ -16,8 +16,15 @@ enum class Operation
     GENERATE_KEY,
     READ_KEY,
     LIST_KEYS,
+    SIGN,
 
     NONE,
+};
+
+enum class SignSource
+{
+    DATA,
+    FILE
 };
 
 inline std::string operationToString(Operation operation)
@@ -26,9 +33,22 @@ inline std::string operationToString(Operation operation)
         {Operation::STATUS, "status"},       {Operation::LOGS, "logs"},
         {Operation::ERASE_KEY, "erase-key"}, {Operation::GENERATE_KEY, "generate-key"},
         {Operation::READ_KEY, "read-key"},   {Operation::LIST_KEYS, "list-keys"},
+        {Operation::SIGN, "sign"},
     };
 
     auto it = op_map.find(operation);
     assert(it != op_map.end() && "Unhandled operation value in operationToString function");
     return (it != op_map.end()) ? it->second : "UNKNOWN";
+}
+
+inline std::string signSourceToString(SignSource signSource)
+{
+    static const std::unordered_map<SignSource, std::string> ss_map = {
+        {SignSource::DATA, "data"},
+        {SignSource::FILE, "file"},
+    };
+
+    auto it = ss_map.find(signSource);
+    assert(it != ss_map.end() && "Unhandled sign source value in signSourceToString function");
+    return (it != ss_map.end()) ? it->second : "UNKNOWN";
 }

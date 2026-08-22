@@ -170,6 +170,37 @@ SystemStatus SecureElement::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
     return SystemStatus::OK;
 }
 
+SystemStatus SecureElement::sign(uint8_t slot, std::vector<uint8_t> payload,
+                                 std::vector<uint8_t>& signature)
+{
+    uint8_t hash[32];
+    size_t hash_length;
+
+    // Hash the payload first
+    psa_status_t status = psa_hash_compute(PSA_ALG_SHA_256, payload.data(), payload.size(), hash,
+                                           sizeof(hash), &hash_length);
+
+    if (status != PSA_SUCCESS)
+    {
+        deinit();
+        return SystemStatus::HSM_ERROR_SIGN;
+    }
+
+    uint8_t rs[64];
+
+    // Sign the payload's hash
+    if (lt_ecc_eddsa_sign(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), hash, sizeof(hash),
+                          rs) != LT_OK)
+    {
+        deinit();
+        return SystemStatus::HSM_ERROR_SIGN;
+    }
+
+    signature.assign(rs, rs + 64);
+
+    return SystemStatus::OK;
+}
+
 SystemStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)

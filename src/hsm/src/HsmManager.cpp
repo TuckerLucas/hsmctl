@@ -29,7 +29,6 @@ SystemStatus HsmManager::status()
     result = m_se.deinit();
 
     m_logger.log(operation, result, options);
-
     return result;
 }
 
@@ -58,7 +57,6 @@ SystemStatus HsmManager::eraseKey(uint8_t slot)
     result = m_se.deinit();
 
     m_logger.log(operation, result, options);
-
     return result;
 }
 
@@ -89,7 +87,6 @@ SystemStatus HsmManager::generateKey(uint8_t slot, Curve curve)
     result = m_se.deinit();
 
     m_logger.log(operation, result, options);
-
     return result;
 }
 
@@ -117,7 +114,6 @@ SystemStatus HsmManager::readKey(uint8_t slot, std::vector<uint8_t>& pubKey)
     result = m_se.deinit();
 
     m_logger.log(Operation::READ_KEY, result, options);
-
     return result;
 }
 
@@ -145,6 +141,46 @@ SystemStatus HsmManager::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
     result = m_se.deinit();
 
     m_logger.log(Operation::LIST_KEYS, result, options);
-
     return result;
+}
+
+SystemStatus HsmManager::sign(uint8_t slot, std::vector<uint8_t> payload,
+                              std::vector<uint8_t>& signature, SignSource signSource,
+                              std::string filepath)
+{
+    SystemStatus result;
+    std::string options = "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") +
+                          "type=" + signSourceToString(signSource);
+
+    if (signSource == SignSource::FILE)
+    {
+        options += " path=" + filepath;
+    }
+
+    result = m_se.init();
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::SIGN, result, options);
+        return result;
+    }
+
+    result = m_se.sign(slot, payload, signature);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::SIGN, result, options);
+        return result;
+    }
+
+    result = m_se.deinit();
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::SIGN, result, options);
+        return result;
+    }
+
+    m_logger.log(Operation::SIGN, result, options);
+    return SystemStatus::OK;
 }
