@@ -204,7 +204,7 @@ TEST_CASE("generate key")
             REQUIRE(result == SystemStatus::OK);
         }
 
-        SECTION("NIST P-256 curve")
+        SECTION("P-256 curve")
         {
             auto result = hsm.generateKey(slot, Curve::P256);
 
@@ -302,7 +302,7 @@ TEST_CASE("read key")
     {
         auto result = hsm.readKey(slot, pubKey);
 
-        REQUIRE(pubKey == mock_public_key);
+        REQUIRE(pubKey == mock_ed25519_public_key);
         REQUIRE(result == SystemStatus::OK);
     }
 
@@ -489,18 +489,60 @@ TEST_CASE("sign")
     {
         SECTION("data")
         {
-            auto result = hsm.sign(slot, payload, signature, SignSource::DATA);
+            signSource = SignSource::DATA;
 
-            REQUIRE(signature == mock_signature);
-            REQUIRE(result == SystemStatus::OK);
+            SECTION("Ed25519")
+            {
+                mock.readKeyPubKey = mock_ed25519_public_key;
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(signature == mock_signature);
+                REQUIRE(mock.lastCurve == Curve::Ed25519);
+                REQUIRE(result == SystemStatus::OK);
+            }
+
+            SECTION("P-256")
+            {
+                mock.readKeyPubKey = mock_p256_public_key;
+                payload = std::vector<uint8_t>(5000, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(signature == mock_signature);
+                REQUIRE(mock.lastCurve == Curve::P256);
+                REQUIRE(result == SystemStatus::OK);
+            }
         }
 
         SECTION("file")
         {
-            auto result = hsm.sign(slot, payload, signature, SignSource::FILE, filepath);
+            signSource = SignSource::FILE;
 
-            REQUIRE(signature == mock_signature);
-            REQUIRE(result == SystemStatus::OK);
+            SECTION("Ed25519")
+            {
+                mock.readKeyPubKey = mock_ed25519_public_key;
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(signature == mock_signature);
+                REQUIRE(mock.lastCurve == Curve::Ed25519);
+                REQUIRE(result == SystemStatus::OK);
+            }
+
+            SECTION("P-256")
+            {
+                mock.readKeyPubKey = mock_p256_public_key;
+                payload = std::vector<uint8_t>(5000, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(signature == mock_signature);
+                REQUIRE(mock.lastCurve == Curve::P256);
+                REQUIRE(result == SystemStatus::OK);
+            }
         }
     }
 
@@ -511,6 +553,24 @@ TEST_CASE("sign")
         auto result = hsm.sign(slot, payload, signature, signSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
+    }
+
+    SECTION("reading key fails")
+    {
+        mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
+
+        auto result = hsm.sign(slot, payload, signature, signSource);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
+    }
+
+    SECTION("payload too large for Ed25519")
+    {
+        payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
+
+        auto result = hsm.sign(slot, payload, signature, signSource);
+
+        REQUIRE(result == SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
     }
 
     SECTION("signing fails")
@@ -557,6 +617,33 @@ TEST_CASE("sign")
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
                 REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
                 REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+
+            SECTION("reading key fails")
+            {
+                mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
+
+                hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+            }
+
+            SECTION("payload too large for Ed25519")
+            {
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus ==
+                        SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
+
+                REQUIRE(result == SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
             }
 
             SECTION("signing fails")
@@ -609,6 +696,34 @@ TEST_CASE("sign")
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
                 REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
                 REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+
+            SECTION("reading key fails")
+            {
+                mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
+
+                hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus ==
+                        SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+
+            SECTION("payload too large for Ed25519")
+            {
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
+
+                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+
+                REQUIRE(mock_logger.logCalled == true);
+                REQUIRE(mock_logger.lastOperation == Operation::SIGN);
+                REQUIRE(mock_logger.lastSystemStatus ==
+                        SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
+                REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+
+                REQUIRE(result == SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
             }
 
             SECTION("signing fails")

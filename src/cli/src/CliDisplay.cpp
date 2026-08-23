@@ -224,6 +224,8 @@ void CliDisplay::readKeyResult(SystemStatus result, uint8_t slot, std::vector<ui
 void CliDisplay::listKeysResult(SystemStatus result, Command command,
                                 std::vector<std::vector<uint8_t>> pubKeys)
 {
+    // TODO: Any point having different SystemStatus error codes
+    // for list keys if this is how we deal with them?
     if (result != SystemStatus::OK)
     {
         std::cout << "Error reading keys\n";
@@ -323,8 +325,17 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
             std::cout << "file not found. Check the path and try again.\n";
         else if (result == SystemStatus::HSM_ERROR_INIT)
             std::cout << "initialisation error. Check that the secure element is connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT)
+            std::cout << "slot is empty. Generate a key first using 'hsmctl generate-key --slot "
+                         "<slot>'.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR)
+            std::cout << "hardware error reading key from slot. Check that the secure element is "
+                         "connected.\n";
         else if (result == SystemStatus::HSM_ERROR_SIGN)
             std::cout << "signing failed. Check that a key exists in the specified slot.\n";
+        else if (result == SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE)
+            std::cout
+                << "payload too large for Ed25519 key. Use a P-256 key for larger payloads.\n";
         else if (result == SystemStatus::HSM_ERROR_DEINIT)
             std::cout << "deinitialisation error.\n";
     }

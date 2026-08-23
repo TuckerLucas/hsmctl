@@ -286,7 +286,7 @@ TEST_CASE("CliParser parseCommand")
                     REQUIRE(parsed_command.requires_help == false);
                 }
 
-                SECTION("NIST P-256")
+                SECTION("P-256")
                 {
                     const char* argv[] = {"hsmctl", "generate-key", "--slot",
                                           "18",     "--curve",      "p256"};
