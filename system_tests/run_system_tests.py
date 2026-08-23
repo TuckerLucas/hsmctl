@@ -52,7 +52,13 @@ for slot in range(32):
     run_command([BINARY, "erase-key", "--slot", str(slot)])
 print("Ready.\n")
 
+# TODO: Setting up and cleaning up should only be done once
+# at the beggining of the tests and at the end of the tests,
+# respectively. This avoids overhead.
 
+# TODO: Find a way to run tests in the same session without
+# needing to initialize and deinitialize hardware between 
+# each test. This avoids overhead.
 
 # Help
 run_test("help menu", [BINARY, "--help"])
@@ -148,20 +154,43 @@ run_test("list all keys - verbose",
 # Sign
 run_test("sign - help", [BINARY, "sign", "--help"])
 
-run_test("sign - data",
+run_test("sign - data (Ed25519)",
          [BINARY, "sign", "--slot", "18", "--data", "hello"],
          setup=[BINARY, "generate-key", "--slot", "18"],
          cleanup=[BINARY, "erase-key", "--slot", "18"])
 
-run_test("sign - file",
+run_test("sign - data (P-256)",
+         [BINARY, "sign", "--slot", "18", "--data", "hello"],
+         setup=[BINARY, "generate-key", "--slot", "18", "--curve", "p256"],
+         cleanup=[BINARY, "erase-key", "--slot", "18"])
+
+run_test("sign - file (Ed25519)",
          [BINARY, "sign", "--slot", "19", "--file", "test_file.txt"],
          setup=[BINARY, "generate-key", "--slot", "19"],
          cleanup=[BINARY, "erase-key", "--slot", "19"])
+
+run_test("sign - file (P-256)",
+         [BINARY, "sign", "--slot", "19", "--file", "test_file.txt"],
+         setup=[BINARY, "generate-key", "--slot", "19", "--curve", "p256"],
+         cleanup=[BINARY, "erase-key", "--slot", "19"]) 
+
+run_test("sign - large file (P-256)",
+         [BINARY, "sign", "--slot", "19", "--file", "large_test_file.txt"],
+         setup=[BINARY, "generate-key", "--slot", "19", "--curve", "p256"],
+         cleanup=[BINARY, "erase-key", "--slot", "19"])      
 
 run_test("sign - file not found",
          [BINARY, "sign", "--slot", "23", "--file", "nonexistent.txt"],
          setup=[BINARY, "generate-key", "--slot", "23"],
          cleanup=[BINARY, "erase-key", "--slot", "23"],
          expected_exit_code=1)
+
+run_test("sign - key not found (data)",
+         [BINARY, "sign", "--slot", "23", "--data", "hello"],
+         expected_exit_code=1)
+
+run_test("sign - key not found (file)",
+         [BINARY, "sign", "--slot", "23", "--file", "test_file.txt"],
+         expected_exit_code=1)         
 
 print("")    

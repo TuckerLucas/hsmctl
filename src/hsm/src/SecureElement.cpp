@@ -170,8 +170,47 @@ SystemStatus SecureElement::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
     return SystemStatus::OK;
 }
 
-SystemStatus SecureElement::sign(uint8_t slot, std::vector<uint8_t> payload,
+SystemStatus SecureElement::sign(uint8_t slot, Curve curve, std::vector<uint8_t> payload,
                                  std::vector<uint8_t>& signature)
+{
+    SystemStatus result;
+
+    if (curve == Curve::Ed25519)
+    {
+        result = signEd25519(slot, payload, signature);
+    }
+    else if (curve == Curve::P256)
+    {
+        result = signP256(slot, payload, signature);
+    }
+    else
+    {
+        assert(false && "Unhandled curve value in SecureElement::sign()");
+        return SystemStatus::HSM_ERROR_SIGN;
+    }
+
+    return result;
+}
+
+SystemStatus SecureElement::signEd25519(uint8_t slot, std::vector<uint8_t> payload,
+                                        std::vector<uint8_t>& signature)
+{
+    uint8_t rs[64];
+
+    if (lt_ecc_eddsa_sign(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), payload.data(),
+                          payload.size(), rs) != LT_OK)
+    {
+        deinit();
+        return SystemStatus::HSM_ERROR_SIGN;
+    }
+
+    signature.assign(rs, rs + 64);
+
+    return SystemStatus::OK;
+}
+
+SystemStatus SecureElement::signP256(uint8_t slot, std::vector<uint8_t> payload,
+                                     std::vector<uint8_t>& signature)
 {
     uint8_t hash[32];
     size_t hash_length;
@@ -188,8 +227,7 @@ SystemStatus SecureElement::sign(uint8_t slot, std::vector<uint8_t> payload,
 
     uint8_t rs[64];
 
-    // Sign the payload's hash
-    if (lt_ecc_eddsa_sign(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), hash, sizeof(hash),
+    if (lt_ecc_ecdsa_sign(&m_impl->handle, static_cast<lt_ecc_slot_t>(slot), hash, hash_length,
                           rs) != LT_OK)
     {
         deinit();

@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 
+constexpr uint16_t ED25519_MAX_MSG_SIZE = 4096;
+
 enum class Curve
 {
     P256 = 1,

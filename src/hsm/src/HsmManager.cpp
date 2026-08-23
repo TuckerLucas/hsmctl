@@ -165,7 +165,25 @@ SystemStatus HsmManager::sign(uint8_t slot, std::vector<uint8_t> payload,
         return result;
     }
 
-    result = m_se.sign(slot, payload, signature);
+    std::vector<uint8_t> pubKey;
+
+    result = m_se.readKey(slot, pubKey);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::SIGN, result, options);
+        return result;
+    }
+
+    Curve curve = (pubKey.size() == 32) ? Curve::Ed25519 : Curve::P256;
+
+    if (curve == Curve::Ed25519 && payload.size() > ED25519_MAX_MSG_SIZE)
+    {
+        m_logger.log(Operation::SIGN, SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE, options);
+        return SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE;
+    }
+
+    result = m_se.sign(slot, curve, payload, signature);
 
     if (result != SystemStatus::OK)
     {
@@ -182,5 +200,5 @@ SystemStatus HsmManager::sign(uint8_t slot, std::vector<uint8_t> payload,
     }
 
     m_logger.log(Operation::SIGN, result, options);
-    return SystemStatus::OK;
+    return result;
 }

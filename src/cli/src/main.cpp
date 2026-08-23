@@ -101,7 +101,6 @@ int main(int argc, const char* argv[])
 
             break;
         }
-        // TODO: Hash the payload contents before signing
         case Operation::SIGN:
         {
             uint8_t slot = std::stoi(command.options["slot"]);
@@ -130,10 +129,6 @@ int main(int argc, const char* argv[])
 
                 payload = std::vector<uint8_t>(std::istreambuf_iterator<char>(file),
                                                std::istreambuf_iterator<char>());
-
-                // Added for safety
-                // Should already be handled by RAII
-                file.close();
             }
 
             result = hsm.sign(slot, payload, signature, signSource, filepath);
