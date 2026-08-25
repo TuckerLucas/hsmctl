@@ -17,6 +17,7 @@ enum class Operation
     READ_KEY,
     LIST_KEYS,
     SIGN,
+    VERIFY,
 
     NONE,
 };
