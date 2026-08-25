@@ -1,7 +1,10 @@
 #include "SecureElement.hpp"
 
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+
 #include <cstring>
-#include <iostream>
 
 #include "libtropic.h"
 #include "libtropic_common.h"
@@ -237,6 +240,246 @@ SystemStatus SecureElement::signP256(uint8_t slot, std::vector<uint8_t> payload,
     signature.assign(rs, rs + 64);
 
     return SystemStatus::OK;
+}
+
+SystemStatus SecureElement::verify(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                   std::vector<uint8_t> signature)
+{
+    if (pubKey.size() == 32)
+    {
+        return verifyEd25519(pubKey, payload, signature);
+    }
+    else if (pubKey.size() == 64)
+    {
+        return verifyP256(pubKey, payload, signature);
+    }
+    else
+    {
+        // This should never happen if parser validation is correct
+        assert(false && "Invalid public key size in SecureElement::verify()");
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+}
+
+SystemStatus SecureElement::verifyEd25519(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                          std::vector<uint8_t> signature)
+{
+    // Create EVP_PKEY from raw Ed25519 public key
+    EVP_PKEY* pkey =
+        EVP_PKEY_new_raw_public_key(EVP_PKEY_ED25519, nullptr, pubKey.data(), pubKey.size());
+
+    if (pkey == nullptr)
+    {
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    // Create message digest context
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+
+    if (mdctx == nullptr)
+    {
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    // Initialize verification with NULL digest (Ed25519 is PureEdDSA, no pre-hashing)
+    if (EVP_DigestVerifyInit(mdctx, nullptr, nullptr, nullptr, pkey) <= 0)
+    {
+        EVP_MD_CTX_free(mdctx);
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    // Verify the signature (one-shot)
+    int result =
+        EVP_DigestVerify(mdctx, signature.data(), signature.size(), payload.data(), payload.size());
+
+    EVP_MD_CTX_free(mdctx);
+    EVP_PKEY_free(pkey);
+
+    return (result == 1) ? SystemStatus::OK : SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE;
+}
+
+SystemStatus SecureElement::verifyP256(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                       std::vector<uint8_t> signature)
+{
+    // Hash the payload with SHA-256
+    unsigned char hash[32];
+    unsigned int hash_len;
+
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+
+    if (mdctx == nullptr)
+    {
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) <= 0)
+    {
+        EVP_MD_CTX_free(mdctx);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EVP_DigestUpdate(mdctx, payload.data(), payload.size()) <= 0)
+    {
+        EVP_MD_CTX_free(mdctx);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EVP_DigestFinal_ex(mdctx, hash, &hash_len) <= 0)
+    {
+        EVP_MD_CTX_free(mdctx);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    EVP_MD_CTX_free(mdctx);
+
+    // Create P256 EVP_PKEY from raw public key (64 bytes: X || Y)
+    // Prepend 0x04 to make uncompressed point format for OpenSSL
+    unsigned char uncompressed_point[65];
+    uncompressed_point[0] = 0x04;
+    std::memcpy(uncompressed_point + 1, pubKey.data(), 64);
+
+    // Create EC_KEY from uncompressed point
+    EC_KEY* ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+
+    if (ec_key == nullptr)
+    {
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    EC_POINT* ec_point = EC_POINT_new(group);
+
+    if (ec_point == nullptr)
+    {
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    BN_CTX* bn_ctx = BN_CTX_new();
+
+    if (bn_ctx == nullptr)
+    {
+        EC_POINT_free(ec_point);
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EC_POINT_oct2point(group, ec_point, uncompressed_point, 65, bn_ctx) <= 0)
+    {
+        BN_CTX_free(bn_ctx);
+        EC_POINT_free(ec_point);
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EC_KEY_set_public_key(ec_key, ec_point) <= 0)
+    {
+        BN_CTX_free(bn_ctx);
+        EC_POINT_free(ec_point);
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    BN_CTX_free(bn_ctx);
+    EC_POINT_free(ec_point);
+
+    // Create EVP_PKEY from EC_KEY
+    EVP_PKEY* pkey = EVP_PKEY_new();
+
+    if (pkey == nullptr)
+    {
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EVP_PKEY_assign_EC_KEY(pkey, ec_key) <= 0)
+    {
+        EVP_PKEY_free(pkey);
+        EC_KEY_free(ec_key);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    // Verify the signature using EVP_PKEY_verify
+    EVP_PKEY_CTX* pkey_ctx = EVP_PKEY_CTX_new(pkey, nullptr);
+
+    if (pkey_ctx == nullptr)
+    {
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    if (EVP_PKEY_verify_init(pkey_ctx) <= 0)
+    {
+        EVP_PKEY_CTX_free(pkey_ctx);
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    std::vector<uint8_t> der_signature = rawSignatureToDer(signature);
+
+    if (der_signature.empty())
+    {
+        EVP_PKEY_CTX_free(pkey_ctx);
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+    }
+
+    int result =
+        EVP_PKEY_verify(pkey_ctx, der_signature.data(), der_signature.size(), hash, hash_len);
+
+    EVP_PKEY_CTX_free(pkey_ctx);
+    EVP_PKEY_free(pkey);
+
+    return (result == 1) ? SystemStatus::OK : SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE;
+}
+
+// TODO: Consider refactoring this function somewhere else
+std::vector<uint8_t> SecureElement::rawSignatureToDer(const std::vector<uint8_t>& raw_sig)
+{
+    // raw_sig is 64 bytes: r (32 bytes) || s (32 bytes)
+    if (raw_sig.size() != 64)
+    {
+        return {};
+    }
+
+    BIGNUM* r = BN_bin2bn(raw_sig.data(), 32, nullptr);
+    BIGNUM* s = BN_bin2bn(raw_sig.data() + 32, 32, nullptr);
+
+    if (r == nullptr || s == nullptr)
+    {
+        BN_free(r);
+        BN_free(s);
+        return {};
+    }
+
+    ECDSA_SIG* ecdsa_sig = ECDSA_SIG_new();
+
+    if (ecdsa_sig == nullptr)
+    {
+        BN_free(r);
+        BN_free(s);
+        return {};
+    }
+
+    ECDSA_SIG_set0(ecdsa_sig, r, s);
+
+    unsigned char* der = nullptr;
+    int der_len = i2d_ECDSA_SIG(ecdsa_sig, &der);
+
+    ECDSA_SIG_free(ecdsa_sig);
+
+    if (der_len <= 0)
+    {
+        OPENSSL_free(der);
+        return {};
+    }
+
+    std::vector<uint8_t> result(der, der + der_len);
+    OPENSSL_free(der);
+
+    return result;
 }
 
 SystemStatus SecureElement::deinit()

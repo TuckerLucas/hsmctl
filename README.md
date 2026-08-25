@@ -21,6 +21,7 @@ sudo apt install git
 sudo apt install build-essential
 sudo apt install cmake
 sudo apt install libsqlite3-dev
+sudo apt install libssl-dev
 ```
 
 ## Building and installing
@@ -34,19 +35,20 @@ make
 sudo make install
 ```
 
-## Command Reference
+## Supported operations
 
-| Command | Description | Usage |
+| Operation | Description | Usage |
 |---------|-------------|---------|
 | `status` | Check if the secure element is connected | — |
 | `logs` | Display the full audit log | — |
-| `generate-key` | Generate an ECC key pair in a hardware slot | `--slot <0-31>` `[--curve <ed25519\|p256>]` |
-| `erase-key` | Erase the key stored in a slot | `--slot <0-31>` |
-| `read-key` | Read back the public key from a slot | `--slot <0-31>` |
+| `generate-key` | Generate an ECC key pair in a hardware slot | `<--slot <0-31>>` `[--curve <ed25519 \| p256>]` |
+| `erase-key` | Erase the key stored in a slot | `<--slot <0-31>>` |
+| `read-key` | Read back the public key from a slot | `<--slot <0-31>>` |
 | `list-keys` | List all public keys stored on the HSM | `[--verbose]` |
-| `sign` | Sign data or a file using a hardware backed key | `--slot <0-31>` `<--data <data> \| --file <path>>` |
+| `sign` | Sign data or a file using a hardware backed key | `<--slot <0-31>>` `<--data <data> \| --file <path>>` |
+| `verify` | Verify a signature using a hardware backed or user provided key | `<--slot <0-31>>` `<--data <data> \| --file <path>>` `<--signature <signature>>` |
 
-### Quick start
+## Quick start
 
 ```bash
 # Confirm the secure element is connected
@@ -70,20 +72,26 @@ hsmctl erase-key --slot 0
 # List all public keys stored on the HSM
 hsmctl list-keys
 
-# Sign a message using the key in slot 29
-hsmctl sign --slot 29 --data "hello"
+# Sign a message using the key in slot 1 (outputs 1st signature)
+hsmctl sign --slot 1 --data "hello from hsmctl"
 
 # Create a sample file to sign 
-echo "hello hsmctl" > sample.txt
+echo "test file content" > sample.txt
 
-# Sign the file using the key in slot 29
+# Sign the file using the key in slot 29 (outputs 2nd signature)
 hsmctl sign --slot 29 --file sample.txt
+
+# Verify the signed data
+hsmctl verify --slot 1 --data "hello from hsmctl" --signature <1st signature>
+
+# Verify the signed file
+hsmctl verify --slot 29 --file sample.txt --signature <2nd signature>
 
 # View the audit log
 hsmctl logs
 ```
 
-The `list-keys` operation presents a list of all public keys stored on the HSM, producing an output similar to the following:
+The `list-keys` operation presents a list of all public keys stored on the HSM, as shown below:
 
 ```
 ------------------------------------------------------------
@@ -95,28 +103,28 @@ Slot    Curve     Public Key
 2 key(s) found
 ```
 
-All operations are logged automatically to `~/.hsmctl/audit.db` and can be retrieved using `logs`. Running the quick start commands above produces:
+All operations are logged automatically to `~/.hsmctl/audit.db` and can be retrieved using the `logs` operation. The quick start commands above produce the following:
 
 ```
 Audit Log
 ---------------------------------------------------------------------------
 Timestamp             Operation      Result    Options             
 ---------------------------------------------------------------------------
-2026-08-18 10:40:35   status         SUCCESS                       
-2026-08-18 10:40:47   generate-key   SUCCESS   slot=0  curve=ed25519
-2026-08-18 10:41:00   generate-key   SUCCESS   slot=1  curve=p256  
-2026-08-18 10:41:23   generate-key   SUCCESS   slot=29 curve=ed25519
-2026-08-18 10:41:49   read-key       SUCCESS   slot=0              
-2026-08-18 10:42:08   erase-key      SUCCESS   slot=0              
-2026-08-18 10:42:28   list-keys      SUCCESS
-2026-08-18 10:42:45   sign           SUCCESS   slot=29 type=data   
-2026-08-18 10:43:01   sign           SUCCESS   slot=29 type=file path=sample.txt               
+2026-09-19 16:37:01   status         SUCCESS                       
+2026-09-19 16:37:10   generate-key   SUCCESS   slot=0  curve=ed25519
+2026-09-19 16:37:18   generate-key   SUCCESS   slot=1  curve=p256  
+2026-09-19 16:37:27   generate-key   SUCCESS   slot=29 curve=ed25519
+2026-09-19 16:37:35   read-key       SUCCESS   slot=0              
+2026-09-19 16:37:48   erase-key      SUCCESS   slot=0              
+2026-09-19 16:37:59   list-keys      SUCCESS                       
+2026-09-19 16:38:43   sign           SUCCESS   slot=1  type=data   
+2026-09-19 16:39:07   sign           SUCCESS   slot=29 type=file path=sample.txt
+2026-09-19 16:39:37   verify         SUCCESS   slot=1  type=data   
+2026-09-19 16:39:59   verify         SUCCESS   slot=29 type=file path=sample.txt
 ---------------------------------------------------------------------------
-9 operations logged
+11 operations logged
 ```
 
 ## Roadmap
 
-**Coming soon:** `verify` operation.
-
-**Longer term:** multi-device support for additional HSM hardware.
+Multi-device support for additional HSM hardware.
