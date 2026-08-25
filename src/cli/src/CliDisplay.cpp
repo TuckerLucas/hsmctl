@@ -15,7 +15,7 @@ void CliDisplay::helpMenu()
     std::cout << "                     --help         Show this help menu.\n";
     std::cout << "\n";
     std::cout << "        Operations:\n";
-    std::cout << "                     status         Scan hardware status.\n";
+    std::cout << "                     status         Check if the HSM is connected.\n";
     std::cout << "                     logs           Display HSM audit logs.\n";
     std::cout << "                     erase-key      Erase a key.\n";
     std::cout << "                     generate-key   Generate an ECC key pair.\n";
@@ -23,6 +23,8 @@ void CliDisplay::helpMenu()
     std::cout << "                     list-keys      List all public keys stored on the HSM.\n";
     std::cout
         << "                     sign           Sign data/file using a hardware backed key.\n";
+    std::cout << "                     verify         Verify a signature using a hardware backed "
+                 "or user provided key.\n";
     std::cout << "\n";
     std::cout << "Hint:\n";
     std::cout << "\n";
@@ -308,11 +310,9 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
         {
             std::cout << std::hex << std::setw(2) << std::setfill('0')
                       << static_cast<int>(signature[i]);
-
-            if ((i + 1) % 16 == 0)
-                std::cout << "\n";
         }
 
+        std::cout << "\n";
         std::cout << std::dec << std::setfill(' ');
         std::cout << std::string(60, '-') << "\n";
         std::cout << "Signature length: " << signature.size() << " bytes\n\n";
@@ -340,6 +340,40 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
             std::cout << "deinitialisation error.\n";
     }
 }
+
+void CliDisplay::verifyResult(SystemStatus result)
+{
+    if (result == SystemStatus::OK)
+    {
+        std::cout << "\nThe signature is valid.\n";
+    }
+    else
+    {
+        std::cout << "Signature verification failed: ";
+
+        if (result == SystemStatus::ERROR_FILE_NOT_FOUND)
+            std::cout << "file not found. Check the path and try again.\n";
+        else if (result == SystemStatus::HSM_ERROR_INIT)
+            std::cout << "initialisation error. Check that the secure element is connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT)
+            std::cout << "slot is empty. Generate a key first using 'hsmctl generate-key --slot "
+                         "<slot>'.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR)
+            std::cout << "hardware error reading key from slot. Check that the secure element is "
+                         "connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY)
+            std::cout << "invalid public key size. Public keys must be 32 or 64 bytes.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR)
+            std::cout
+                << "cryptographic error during verification. Check your inputs and try again.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE)
+            std::cout << "the signature is invalid.\n";
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
+            std::cout << "deinitialisation error.\n";
+    }
+}
+
+// TODO: Improve help menus for individual operations
 
 void CliDisplay::status_help()
 {
@@ -460,6 +494,39 @@ void CliDisplay::sign_help()
     std::cout << "        hsmctl sign --file document.pdf --slot 12\n";
 }
 
+void CliDisplay::verify_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl verify --slot <slot> --data <data> --signature <hex>\n";
+    std::cout << "        hsmctl verify --slot <slot> --file <path> --signature <hex>\n";
+    std::cout << "        hsmctl verify --pubkey <hex> --data <data> --signature <hex>\n";
+    std::cout << "        hsmctl verify --pubkey <hex> --file <path> --signature <hex>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout
+        << "        Verify a signature over data or a file using a public key stored on the\n";
+    std::cout << "        HSM or provided directly.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --slot <0-31>      Slot containing the public key (mutually exclusive "
+                 "with --pubkey).\n";
+    std::cout << "        --pubkey <hex>     Public key in hex format (mutually exclusive with "
+                 "--slot).\n";
+    std::cout
+        << "        --data <data>      Data that was signed (mutually exclusive with --file).\n";
+    std::cout << "        --file <path>      Path to file that was signed (mutually exclusive with "
+                 "--data).\n";
+    std::cout << "        --signature <hex>  Signature in hex format (required).\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl verify --slot 0 --data \"hello\" --signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --slot 15 --file document.pdf --signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --pubkey bf98aad487c19154...f3b8a20a --data \"hello\" "
+                 "--signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --pubkey bf98aad487c19154...f3b8a20a --file document.pdf "
+                 "--signature ab12cd34...\n";
+}
+
 void CliDisplay::operationHelpMenu(Operation op)
 {
     switch (op)
@@ -484,6 +551,9 @@ void CliDisplay::operationHelpMenu(Operation op)
             break;
         case Operation::SIGN:
             sign_help();
+            break;
+        case Operation::VERIFY:
+            verify_help();
             break;
         default:
             assert(false && "Unhandled operation value in operationHelpMenu");

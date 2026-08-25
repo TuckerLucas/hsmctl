@@ -28,6 +28,7 @@ public:
     SystemStatus readKeyResult = SystemStatus::OK;
     SystemStatus listKeysResult = SystemStatus::OK;
     SystemStatus signResult = SystemStatus::OK;
+    SystemStatus verifyResult = SystemStatus::OK;
     SystemStatus deinitResult = SystemStatus::OK;
 
     Curve lastCurve = Curve::Ed25519;
@@ -74,6 +75,12 @@ public:
         lastCurve = curve;
 
         return signResult;
+    }
+
+    SystemStatus verify(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                        std::vector<uint8_t> signature) override
+    {
+        return verifyResult;
     }
 
     SystemStatus deinit() override

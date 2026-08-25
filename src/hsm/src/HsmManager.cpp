@@ -145,14 +145,14 @@ SystemStatus HsmManager::listKeys(std::vector<std::vector<uint8_t>>& pubKeys)
 }
 
 SystemStatus HsmManager::sign(uint8_t slot, std::vector<uint8_t> payload,
-                              std::vector<uint8_t>& signature, SignSource signSource,
+                              std::vector<uint8_t>& signature, DataSource dataSource,
                               std::string filepath)
 {
     SystemStatus result;
     std::string options = "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") +
-                          "type=" + signSourceToString(signSource);
+                          "type=" + dataSourceToString(dataSource);
 
-    if (signSource == SignSource::FILE)
+    if (dataSource == DataSource::FILE)
     {
         options += " path=" + filepath;
     }
@@ -200,5 +200,82 @@ SystemStatus HsmManager::sign(uint8_t slot, std::vector<uint8_t> payload,
     }
 
     m_logger.log(Operation::SIGN, result, options);
+    return result;
+}
+
+SystemStatus HsmManager::verifyWithHsmKey(uint8_t slot, std::vector<uint8_t> payload,
+                                          std::vector<uint8_t> signature, DataSource dataSource,
+                                          std::string filepath)
+{
+    SystemStatus result;
+    std::string options = "slot=" + std::to_string(slot) + (slot < 10 ? "  " : " ") +
+                          "type=" + dataSourceToString(dataSource);
+
+    if (dataSource == DataSource::FILE)
+    {
+        options += " path=" + filepath;
+    }
+
+    result = m_se.init();
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::VERIFY, result, options);
+        return result;
+    }
+
+    std::vector<uint8_t> pubKey;
+
+    result = m_se.readKey(slot, pubKey);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::VERIFY, result, options);
+        return result;
+    }
+
+    result = m_se.verify(pubKey, payload, signature);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::VERIFY, result, options);
+        return result;
+    }
+
+    result = m_se.deinit();
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::VERIFY, result, options);
+        return result;
+    }
+
+    m_logger.log(Operation::VERIFY, result, options);
+    return result;
+}
+
+SystemStatus HsmManager::verifyWithUserKey(std::vector<uint8_t> pubKey,
+                                           std::vector<uint8_t> payload,
+                                           std::vector<uint8_t> signature, DataSource dataSource,
+                                           std::string filepath)
+{
+    SystemStatus result;
+
+    std::string options = "user-key type=" + dataSourceToString(dataSource);
+
+    if (dataSource == DataSource::FILE)
+    {
+        options += " path=" + filepath;
+    }
+
+    result = m_se.verify(pubKey, payload, signature);
+
+    if (result != SystemStatus::OK)
+    {
+        m_logger.log(Operation::VERIFY, result, options);
+        return result;
+    }
+
+    m_logger.log(Operation::VERIFY, result, options);
     return result;
 }

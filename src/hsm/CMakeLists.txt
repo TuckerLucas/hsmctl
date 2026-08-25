@@ -12,6 +12,7 @@ target_link_libraries(hsm PRIVATE
     tropic
     audit
     common
+    OpenSSL::Crypto
 )
 
 # ==== Tests ====

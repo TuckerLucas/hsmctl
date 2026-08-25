@@ -9,6 +9,9 @@ include(FetchContent)
 # ==== SQLite3 ====
 find_package(SQLite3 REQUIRED)
 
+# ==== OpenSSL ====
+find_package(OpenSSL 3.0 REQUIRED)
+
 # ==== Catch2 ====
 FetchContent_Declare(
     Catch2
