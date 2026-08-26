@@ -106,18 +106,18 @@ int main(int argc, const char* argv[])
             uint8_t slot = std::stoi(command.options["slot"]);
             std::vector<uint8_t> payload;
             std::vector<uint8_t> signature;
-            SignSource signSource;
+            DataSource dataSource;
             std::string filepath = "";
 
             if (command.options.count("data") > 0)
             {
-                signSource = SignSource::DATA;
+                dataSource = DataSource::DATA;
                 std::string data = command.options["data"];
                 payload = std::vector<uint8_t>(data.begin(), data.end());
             }
             else
             {
-                signSource = SignSource::FILE;
+                dataSource = DataSource::FILE;
                 filepath = command.options["file"];
                 std::ifstream file(filepath, std::ios::binary);
 
@@ -131,7 +131,7 @@ int main(int argc, const char* argv[])
                                                std::istreambuf_iterator<char>());
             }
 
-            result = hsm.sign(slot, payload, signature, signSource, filepath);
+            result = hsm.sign(slot, payload, signature, dataSource, filepath);
 
             display.signResult(result, signature);
 

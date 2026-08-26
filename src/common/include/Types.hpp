@@ -22,7 +22,7 @@ enum class Operation
     NONE,
 };
 
-enum class SignSource
+enum class DataSource
 {
     DATA,
     FILE
@@ -42,14 +42,14 @@ inline std::string operationToString(Operation operation)
     return (it != op_map.end()) ? it->second : "UNKNOWN";
 }
 
-inline std::string signSourceToString(SignSource signSource)
+inline std::string dataSourceToString(DataSource dataSource)
 {
-    static const std::unordered_map<SignSource, std::string> ss_map = {
-        {SignSource::DATA, "data"},
-        {SignSource::FILE, "file"},
+    static const std::unordered_map<DataSource, std::string> ss_map = {
+        {DataSource::DATA, "data"},
+        {DataSource::FILE, "file"},
     };
 
-    auto it = ss_map.find(signSource);
-    assert(it != ss_map.end() && "Unhandled sign source value in signSourceToString function");
+    auto it = ss_map.find(dataSource);
+    assert(it != ss_map.end() && "Unhandled sign source value in dataSourceToString function");
     return (it != ss_map.end()) ? it->second : "UNKNOWN";
 }

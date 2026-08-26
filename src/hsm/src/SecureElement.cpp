@@ -239,6 +239,12 @@ SystemStatus SecureElement::signP256(uint8_t slot, std::vector<uint8_t> payload,
     return SystemStatus::OK;
 }
 
+SystemStatus SecureElement::verify(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                   std::vector<uint8_t> signature)
+{
+    return SystemStatus::OK;
+}
+
 SystemStatus SecureElement::deinit()
 {
     if (lt_session_abort(&m_impl->handle) != LT_OK)

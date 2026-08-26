@@ -17,7 +17,13 @@ public:
     SystemStatus readKey(uint8_t slot, std::vector<uint8_t>& pubKey);
     SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys);
     SystemStatus sign(uint8_t slot, std::vector<uint8_t> payload, std::vector<uint8_t>& signature,
-                      SignSource signSource, std::string filepath = "");
+                      DataSource dataSource, std::string filepath = "");
+    SystemStatus verifyWithHsmKey(uint8_t slot, std::vector<uint8_t> payload,
+                                  std::vector<uint8_t> signature, DataSource dataSource,
+                                  std::string filepath = "");
+    SystemStatus verifyWithUserKey(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                   std::vector<uint8_t> signature, DataSource dataSource,
+                                   std::string filepath = "");
 
 private:
     ISecureElement& m_se;

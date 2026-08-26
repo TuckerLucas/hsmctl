@@ -18,6 +18,8 @@ public:
     SystemStatus listKeys(std::vector<std::vector<uint8_t>>& pubKeys) override;
     SystemStatus sign(uint8_t slot, Curve curve, std::vector<uint8_t> payload,
                       std::vector<uint8_t>& signature) override;
+    SystemStatus verify(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                        std::vector<uint8_t> signature) override;
     SystemStatus deinit() override;
 
 private:

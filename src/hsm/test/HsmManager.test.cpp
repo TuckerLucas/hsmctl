@@ -482,21 +482,21 @@ TEST_CASE("sign")
     uint8_t slot = 15;
     std::vector<uint8_t> payload;
     std::vector<uint8_t> signature;
-    SignSource signSource = SignSource::DATA;
+    DataSource dataSource = DataSource::DATA;
     std::string filepath;
 
     SECTION("success")
     {
         SECTION("data")
         {
-            signSource = SignSource::DATA;
+            dataSource = DataSource::DATA;
 
             SECTION("Ed25519")
             {
                 mock.readKeyPubKey = mock_ed25519_public_key;
                 payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource);
+                auto result = hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(signature == mock_signature);
                 REQUIRE(mock.lastCurve == Curve::Ed25519);
@@ -506,9 +506,9 @@ TEST_CASE("sign")
             SECTION("P-256")
             {
                 mock.readKeyPubKey = mock_p256_public_key;
-                payload = std::vector<uint8_t>(5000, 0x00);
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource);
+                auto result = hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(signature == mock_signature);
                 REQUIRE(mock.lastCurve == Curve::P256);
@@ -518,14 +518,14 @@ TEST_CASE("sign")
 
         SECTION("file")
         {
-            signSource = SignSource::FILE;
+            dataSource = DataSource::FILE;
 
             SECTION("Ed25519")
             {
                 mock.readKeyPubKey = mock_ed25519_public_key;
                 payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+                auto result = hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(signature == mock_signature);
                 REQUIRE(mock.lastCurve == Curve::Ed25519);
@@ -535,9 +535,9 @@ TEST_CASE("sign")
             SECTION("P-256")
             {
                 mock.readKeyPubKey = mock_p256_public_key;
-                payload = std::vector<uint8_t>(5000, 0x00);
+                payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+                auto result = hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(signature == mock_signature);
                 REQUIRE(mock.lastCurve == Curve::P256);
@@ -550,7 +550,7 @@ TEST_CASE("sign")
     {
         mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
-        auto result = hsm.sign(slot, payload, signature, signSource);
+        auto result = hsm.sign(slot, payload, signature, dataSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
     }
@@ -559,7 +559,7 @@ TEST_CASE("sign")
     {
         mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
 
-        auto result = hsm.sign(slot, payload, signature, signSource);
+        auto result = hsm.sign(slot, payload, signature, dataSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
     }
@@ -568,7 +568,7 @@ TEST_CASE("sign")
     {
         payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
 
-        auto result = hsm.sign(slot, payload, signature, signSource);
+        auto result = hsm.sign(slot, payload, signature, dataSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_SIGN_PAYLOAD_TOO_LARGE);
     }
@@ -577,7 +577,7 @@ TEST_CASE("sign")
     {
         mock.signResult = SystemStatus::HSM_ERROR_SIGN;
 
-        auto result = hsm.sign(slot, payload, signature, signSource);
+        auto result = hsm.sign(slot, payload, signature, dataSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_SIGN);
     }
@@ -586,7 +586,7 @@ TEST_CASE("sign")
     {
         mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
-        auto result = hsm.sign(slot, payload, signature, signSource);
+        auto result = hsm.sign(slot, payload, signature, dataSource);
 
         REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
     }
@@ -595,11 +595,11 @@ TEST_CASE("sign")
     {
         SECTION("data")
         {
-            signSource = SignSource::DATA;
+            dataSource = DataSource::DATA;
 
             SECTION("success")
             {
-                hsm.sign(slot, payload, signature, signSource);
+                hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -611,7 +611,7 @@ TEST_CASE("sign")
             {
                 mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
-                hsm.sign(slot, payload, signature, signSource);
+                hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -623,7 +623,7 @@ TEST_CASE("sign")
             {
                 mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
 
-                hsm.sign(slot, payload, signature, signSource);
+                hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -635,7 +635,7 @@ TEST_CASE("sign")
             {
                 payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource);
+                auto result = hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -650,7 +650,7 @@ TEST_CASE("sign")
             {
                 mock.signResult = SystemStatus::HSM_ERROR_SIGN;
 
-                hsm.sign(slot, payload, signature, signSource);
+                hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -658,11 +658,11 @@ TEST_CASE("sign")
                 REQUIRE(mock_logger.lastOptions == "slot=15 type=data");
             }
 
-            SECTION("deinit fails")
+            SECTION("hardware deinitialization fails")
             {
                 mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
-                hsm.sign(slot, payload, signature, signSource);
+                hsm.sign(slot, payload, signature, dataSource);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -673,12 +673,12 @@ TEST_CASE("sign")
 
         SECTION("file")
         {
-            signSource = SignSource::FILE;
+            dataSource = DataSource::FILE;
             filepath = "filepath/file.txt";
 
             SECTION("success")
             {
-                hsm.sign(slot, payload, signature, signSource, filepath);
+                hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -690,7 +690,7 @@ TEST_CASE("sign")
             {
                 mock.initResult = SystemStatus::HSM_ERROR_INIT;
 
-                hsm.sign(slot, payload, signature, signSource, filepath);
+                hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -702,7 +702,7 @@ TEST_CASE("sign")
             {
                 mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
 
-                hsm.sign(slot, payload, signature, signSource, filepath);
+                hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -715,7 +715,7 @@ TEST_CASE("sign")
             {
                 payload = std::vector<uint8_t>(ED25519_MAX_MSG_SIZE + 1, 0x00);
 
-                auto result = hsm.sign(slot, payload, signature, signSource, filepath);
+                auto result = hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -730,7 +730,7 @@ TEST_CASE("sign")
             {
                 mock.signResult = SystemStatus::HSM_ERROR_SIGN;
 
-                hsm.sign(slot, payload, signature, signSource, filepath);
+                hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
@@ -738,16 +738,290 @@ TEST_CASE("sign")
                 REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
             }
 
-            SECTION("deinit fails")
+            SECTION("hardware deinitialization fails")
             {
                 mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
 
-                hsm.sign(slot, payload, signature, signSource, filepath);
+                hsm.sign(slot, payload, signature, dataSource, filepath);
 
                 REQUIRE(mock_logger.logCalled == true);
                 REQUIRE(mock_logger.lastOperation == Operation::SIGN);
                 REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
                 REQUIRE(mock_logger.lastOptions == "slot=15 type=file path=filepath/file.txt");
+            }
+        }
+    }
+}
+
+TEST_CASE("verify")
+{
+    MockSecureElement mock;
+    MockAuditLogger mock_logger;
+    HsmManager hsm(mock, mock_logger);
+    std::vector<uint8_t> payload;
+    std::vector<uint8_t> signature;
+    DataSource dataSource = DataSource::DATA;
+    std::string filepath;
+
+    SECTION("verify with HSM key")
+    {
+        uint8_t slot = 17;
+
+        SECTION("success")
+        {
+            auto result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::OK);
+        }
+
+        SECTION("hardware initialization fails")
+        {
+            mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+            auto result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::HSM_ERROR_INIT);
+        }
+
+        SECTION("reading key fails")
+        {
+            mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
+
+            auto result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR);
+        }
+
+        SECTION("verification fails")
+        {
+            mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE;
+
+            auto result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE);
+        }
+
+        SECTION("hardware deinitialization fails")
+        {
+            mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+            auto result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::HSM_ERROR_DEINIT);
+        }
+
+        SECTION("logging")
+        {
+            SECTION("data")
+            {
+                dataSource = DataSource::DATA;
+
+                SECTION("success")
+                {
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=data");
+                }
+
+                SECTION("hardware initialization fails")
+                {
+                    mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=data");
+                }
+
+                SECTION("reading key fails")
+                {
+                    mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=data");
+                }
+
+                SECTION("verification fails")
+                {
+                    mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=data");
+                }
+
+                SECTION("hardware deinitialization fails")
+                {
+                    mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=data");
+                }
+            }
+
+            SECTION("file")
+            {
+                dataSource = DataSource::FILE;
+                filepath = "filepath/file.txt";
+
+                SECTION("success")
+                {
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=file path=filepath/file.txt");
+                }
+
+                SECTION("hardware initialization fails")
+                {
+                    mock.initResult = SystemStatus::HSM_ERROR_INIT;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_INIT);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=file path=filepath/file.txt");
+                }
+
+                SECTION("reading key fails")
+                {
+                    mock.readKeyResult = SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=file path=filepath/file.txt");
+                }
+
+                SECTION("verification fails")
+                {
+                    mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=file path=filepath/file.txt");
+                }
+
+                SECTION("hardware deinitialization fails")
+                {
+                    mock.deinitResult = SystemStatus::HSM_ERROR_DEINIT;
+
+                    hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::HSM_ERROR_DEINIT);
+                    REQUIRE(mock_logger.lastOptions == "slot=17 type=file path=filepath/file.txt");
+                }
+            }
+        }
+    }
+
+    SECTION("verify with user provided key")
+    {
+        std::vector<uint8_t> pubKey;
+
+        SECTION("success")
+        {
+            auto result = hsm.verifyWithUserKey(pubKey, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::OK);
+        }
+
+        SECTION("verification fails")
+        {
+            mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+
+            auto result = hsm.verifyWithUserKey(pubKey, payload, signature, dataSource);
+
+            REQUIRE(result == SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR);
+        }
+
+        SECTION("logging")
+        {
+            SECTION("data")
+            {
+                dataSource = DataSource::DATA;
+
+                SECTION("success")
+                {
+                    hsm.verifyWithUserKey(pubKey, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                    REQUIRE(mock_logger.lastOptions == "user-key type=data");
+                }
+
+                SECTION("verification fails")
+                {
+                    mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR;
+
+                    hsm.verifyWithUserKey(pubKey, payload, signature, dataSource);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR);
+                    REQUIRE(mock_logger.lastOptions == "user-key type=data");
+                }
+            }
+
+            SECTION("file")
+            {
+                dataSource = DataSource::FILE;
+                filepath = "filepath/file.txt";
+
+                SECTION("success")
+                {
+                    hsm.verifyWithUserKey(pubKey, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus == SystemStatus::OK);
+                    REQUIRE(mock_logger.lastOptions == "user-key type=file path=filepath/file.txt");
+                }
+
+                SECTION("verification fails")
+                {
+                    mock.verifyResult = SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE;
+
+                    hsm.verifyWithUserKey(pubKey, payload, signature, dataSource, filepath);
+
+                    REQUIRE(mock_logger.logCalled == true);
+                    REQUIRE(mock_logger.lastOperation == Operation::VERIFY);
+                    REQUIRE(mock_logger.lastSystemStatus ==
+                            SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE);
+                    REQUIRE(mock_logger.lastOptions == "user-key type=file path=filepath/file.txt");
+                }
             }
         }
     }
