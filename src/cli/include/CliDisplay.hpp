@@ -33,4 +33,5 @@ public:
     void readKey_help();
     void listKeys_help();
     void sign_help();
+    void verify_help();
 };

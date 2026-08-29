@@ -137,6 +137,54 @@ int main(int argc, const char* argv[])
 
             break;
         }
+        case Operation::VERIFY:
+        {
+            std::vector<uint8_t> signature;
+            signature = std::vector<uint8_t>(command.options["signature"].begin(),
+                                             command.options["signature"].end());
+
+            DataSource dataSource;
+            std::vector<uint8_t> payload;
+            std::string filepath = "";
+
+            if (!command.options["data"].empty())
+            {
+                dataSource = DataSource::DATA;
+                std::string data = command.options["data"];
+                payload = std::vector<uint8_t>(data.begin(), data.end());
+            }
+            else
+            {
+                dataSource = DataSource::FILE;
+                filepath = command.options["file"];
+                std::ifstream file(filepath, std::ios::binary);
+
+                if (!file.is_open())
+                {
+                    display.signResult(SystemStatus::ERROR_FILE_NOT_FOUND, {});
+                    return 1;
+                }
+
+                payload = std::vector<uint8_t>(std::istreambuf_iterator<char>(file),
+                                               std::istreambuf_iterator<char>());
+            }
+
+            if (!command.options["slot"].empty())
+            {
+                uint8_t slot = std::stoi(command.options["slot"]);
+
+                result = hsm.verifyWithHsmKey(slot, payload, signature, dataSource, filepath);
+            }
+            else
+            {
+                std::vector<uint8_t> pubkey = std::vector<uint8_t>(
+                    command.options["pubkey"].begin(), command.options["pubkey"].end());
+
+                result = hsm.verifyWithUserKey(pubkey, payload, signature, dataSource, filepath);
+            }
+
+            // display.verifyResult();
+        }
         case Operation::NONE:
         default:
             display.commandError(command);

@@ -341,6 +341,8 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
     }
 }
 
+// TODO: Improve help menus for individual operations
+
 void CliDisplay::status_help()
 {
     std::cout << "Usage:\n";
@@ -460,6 +462,39 @@ void CliDisplay::sign_help()
     std::cout << "        hsmctl sign --file document.pdf --slot 12\n";
 }
 
+void CliDisplay::verify_help()
+{
+    std::cout << "Usage:\n";
+    std::cout << "        hsmctl verify --slot <slot> --data <data> --signature <hex>\n";
+    std::cout << "        hsmctl verify --slot <slot> --file <path> --signature <hex>\n";
+    std::cout << "        hsmctl verify --pubkey <hex> --data <data> --signature <hex>\n";
+    std::cout << "        hsmctl verify --pubkey <hex> --file <path> --signature <hex>\n";
+    std::cout << "\n";
+    std::cout << "Description:\n";
+    std::cout
+        << "        Verify a signature over data or a file using a public key stored on the\n";
+    std::cout << "        HSM or provided directly.\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << "        --slot <0-31>      Slot containing the public key (mutually exclusive "
+                 "with --pubkey).\n";
+    std::cout << "        --pubkey <hex>     Public key in hex format (mutually exclusive with "
+                 "--slot).\n";
+    std::cout
+        << "        --data <data>      Data that was signed (mutually exclusive with --file).\n";
+    std::cout << "        --file <path>      Path to file that was signed (mutually exclusive with "
+                 "--data).\n";
+    std::cout << "        --signature <hex>  Signature in hex format (required).\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "        hsmctl verify --slot 0 --data \"hello\" --signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --slot 15 --file document.pdf --signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --pubkey bf98aad487c19154...f3b8a20a --data \"hello\" "
+                 "--signature ab12cd34...\n";
+    std::cout << "        hsmctl verify --pubkey bf98aad487c19154...f3b8a20a --file document.pdf "
+                 "--signature ab12cd34...\n";
+}
+
 void CliDisplay::operationHelpMenu(Operation op)
 {
     switch (op)
@@ -484,6 +519,9 @@ void CliDisplay::operationHelpMenu(Operation op)
             break;
         case Operation::SIGN:
             sign_help();
+            break;
+        case Operation::VERIFY:
+            verify_help();
             break;
         default:
             assert(false && "Unhandled operation value in operationHelpMenu");
