@@ -21,6 +21,7 @@ sudo apt install git
 sudo apt install build-essential
 sudo apt install cmake
 sudo apt install libsqlite3-dev
+sudo apt install libssl-dev
 ```
 
 ## Building and installing
