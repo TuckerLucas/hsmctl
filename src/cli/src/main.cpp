@@ -183,7 +183,7 @@ int main(int argc, const char* argv[])
                 result = hsm.verifyWithUserKey(pubkey, payload, signature, dataSource, filepath);
             }
 
-            // display.verifyResult();
+            display.verifyResult(result);
         }
         case Operation::NONE:
         default:

@@ -341,6 +341,18 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
     }
 }
 
+void CliDisplay::verifyResult(SystemStatus result)
+{
+    if (result == SystemStatus::OK)
+    {
+        std::cout << "OK";
+    }
+    else
+    {
+        std::cout << "NOK";
+    }
+}
+
 // TODO: Improve help menus for individual operations
 
 void CliDisplay::status_help()

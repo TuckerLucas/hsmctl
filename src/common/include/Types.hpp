@@ -34,7 +34,7 @@ inline std::string operationToString(Operation operation)
         {Operation::STATUS, "status"},       {Operation::LOGS, "logs"},
         {Operation::ERASE_KEY, "erase-key"}, {Operation::GENERATE_KEY, "generate-key"},
         {Operation::READ_KEY, "read-key"},   {Operation::LIST_KEYS, "list-keys"},
-        {Operation::SIGN, "sign"},
+        {Operation::SIGN, "sign"},           {Operation::VERIFY, "verify"},
     };
 
     auto it = op_map.find(operation);
