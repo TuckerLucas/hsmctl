@@ -1,5 +1,9 @@
 #include "SecureElement.hpp"
 
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+
 #include <cstring>
 #include <iostream>
 
@@ -242,6 +246,72 @@ SystemStatus SecureElement::signP256(uint8_t slot, std::vector<uint8_t> payload,
 SystemStatus SecureElement::verify(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
                                    std::vector<uint8_t> signature)
 {
+    if (pubKey.size() == 32)
+    {
+        return verifyEd25519(pubKey, payload, signature);
+    }
+    else if (pubKey.size() == 64)
+    {
+        return verifyP256(pubKey, payload, signature);
+    }
+    else
+    {
+        assert(false && "Invalid public key size in SecureElement::verify()");
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+}
+
+SystemStatus SecureElement::verifyEd25519(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                          std::vector<uint8_t> signature)
+{
+    // Create EVP_PKEY from raw Ed25519 public key
+    EVP_PKEY* pkey =
+        EVP_PKEY_new_raw_public_key(EVP_PKEY_ED25519, nullptr, pubKey.data(), pubKey.size());
+    if (pkey == nullptr)
+    {
+        std::cout << "verifyed25519rawpkey\n";
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+
+    // Create message digest context
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if (mdctx == nullptr)
+    {
+        std::cout << "error\n";
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+
+    // Initialize verification with NULL digest (Ed25519 is PureEdDSA, no pre-hashing)
+    if (EVP_DigestVerifyInit(mdctx, nullptr, nullptr, nullptr, pkey) <= 0)
+    {
+        std::cout << "verifyed25519init\n";
+        EVP_MD_CTX_free(mdctx);
+        EVP_PKEY_free(pkey);
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+
+    // Verify the signature (one-shot)
+    int result =
+        EVP_DigestVerify(mdctx, signature.data(), signature.size(), payload.data(), payload.size());
+
+    EVP_MD_CTX_free(mdctx);
+    EVP_PKEY_free(pkey);
+
+    if (result == 1)
+    {
+        return SystemStatus::OK;
+    }
+    else
+    {
+        return SystemStatus::HSM_ERROR_VERIFY;
+    }
+}
+
+SystemStatus SecureElement::verifyP256(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                                       std::vector<uint8_t> signature)
+{
+    std::cout << "verifyp256\n";
     return SystemStatus::OK;
 }
 

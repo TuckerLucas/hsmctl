@@ -31,4 +31,10 @@ private:
 
     SystemStatus signP256(uint8_t slot, std::vector<uint8_t> payload,
                           std::vector<uint8_t>& signature);
+
+    SystemStatus verifyEd25519(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                               std::vector<uint8_t> signature);
+
+    SystemStatus verifyP256(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
+                            std::vector<uint8_t> signature);
 };

@@ -10,6 +10,20 @@
 
 std::string getDbPath();
 
+std::vector<uint8_t> hexToBytes(const std::string& hex)
+{
+    std::vector<uint8_t> bytes;
+
+    for (size_t i = 0; i < hex.length(); i += 2)
+    {
+        std::string byteString = hex.substr(i, 2);
+        uint8_t byte = static_cast<uint8_t>(std::stoi(byteString, nullptr, 16));
+        bytes.push_back(byte);
+    }
+
+    return bytes;
+}
+
 int main(int argc, const char* argv[])
 {
     CliDisplay display;
@@ -139,9 +153,10 @@ int main(int argc, const char* argv[])
         }
         case Operation::VERIFY:
         {
-            std::vector<uint8_t> signature;
-            signature = std::vector<uint8_t>(command.options["signature"].begin(),
-                                             command.options["signature"].end());
+            std::vector<uint8_t> signature = hexToBytes(command.options["signature"]);
+
+            // signature = std::vector<uint8_t>(command.options["signature"].begin(),
+            //                                  command.options["signature"].end());
 
             DataSource dataSource;
             std::vector<uint8_t> payload;
