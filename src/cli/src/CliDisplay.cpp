@@ -308,11 +308,9 @@ void CliDisplay::signResult(SystemStatus result, std::vector<uint8_t> signature)
         {
             std::cout << std::hex << std::setw(2) << std::setfill('0')
                       << static_cast<int>(signature[i]);
-
-            if ((i + 1) % 16 == 0)
-                std::cout << "\n";
         }
 
+        std::cout << "\n";
         std::cout << std::dec << std::setfill(' ');
         std::cout << std::string(60, '-') << "\n";
         std::cout << "Signature length: " << signature.size() << " bytes\n\n";
@@ -345,11 +343,32 @@ void CliDisplay::verifyResult(SystemStatus result)
 {
     if (result == SystemStatus::OK)
     {
-        std::cout << "OK";
+        std::cout << "\nSignature verification successful.\n";
+        std::cout << "The signature is valid.\n\n";
     }
     else
     {
-        std::cout << "NOK";
+        std::cout << "Signature verification failed: ";
+
+        if (result == SystemStatus::ERROR_FILE_NOT_FOUND)
+            std::cout << "file not found. Check the path and try again.\n";
+        else if (result == SystemStatus::HSM_ERROR_INIT)
+            std::cout << "initialisation error. Check that the secure element is connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_EMPTY_SLOT)
+            std::cout << "slot is empty. Generate a key first using 'hsmctl generate-key --slot "
+                         "<slot>'.\n";
+        else if (result == SystemStatus::HSM_ERROR_READ_KEY_HW_ERROR)
+            std::cout << "hardware error reading key from slot. Check that the secure element is "
+                         "connected.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY)
+            std::cout << "invalid public key size. Public keys must be 32 or 64 bytes.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY_CRYPTO_ERROR)
+            std::cout
+                << "cryptographic error during verification. Check your inputs and try again.\n";
+        else if (result == SystemStatus::HSM_ERROR_VERIFY_INVALID_SIGNATURE)
+            std::cout << "the signature is invalid. It does not match the provided key and data.\n";
+        else if (result == SystemStatus::HSM_ERROR_DEINIT)
+            std::cout << "deinitialisation error.\n";
     }
 }
 

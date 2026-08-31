@@ -155,9 +155,6 @@ int main(int argc, const char* argv[])
         {
             std::vector<uint8_t> signature = hexToBytes(command.options["signature"]);
 
-            // signature = std::vector<uint8_t>(command.options["signature"].begin(),
-            //                                  command.options["signature"].end());
-
             DataSource dataSource;
             std::vector<uint8_t> payload;
             std::string filepath = "";
