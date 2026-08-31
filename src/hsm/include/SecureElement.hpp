@@ -37,4 +37,6 @@ private:
 
     SystemStatus verifyP256(std::vector<uint8_t> pubKey, std::vector<uint8_t> payload,
                             std::vector<uint8_t> signature);
+
+    std::vector<uint8_t> rawSignatureToDer(const std::vector<uint8_t>& raw_sig);
 };
