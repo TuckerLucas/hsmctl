@@ -189,13 +189,14 @@ int main(int argc, const char* argv[])
             }
             else
             {
-                std::vector<uint8_t> pubkey = std::vector<uint8_t>(
-                    command.options["pubkey"].begin(), command.options["pubkey"].end());
+                std::vector<uint8_t> pubkey = hexToBytes(command.options["pubkey"]);
 
                 result = hsm.verifyWithUserKey(pubkey, payload, signature, dataSource, filepath);
             }
 
             display.verifyResult(result);
+
+            break;
         }
         case Operation::NONE:
         default:

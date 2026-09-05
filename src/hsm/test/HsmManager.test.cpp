@@ -5,6 +5,8 @@
 #include "MockAuditLogger.hpp"
 #include "MockSecureElement.hpp"
 
+// TODO: add empty payload test for sign. Should fail
+
 TEST_CASE("hardware status")
 {
     MockSecureElement mock;

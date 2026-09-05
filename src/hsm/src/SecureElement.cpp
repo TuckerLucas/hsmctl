@@ -5,7 +5,6 @@
 #include <openssl/evp.h>
 
 #include <cstring>
-#include <iostream>
 
 #include "libtropic.h"
 #include "libtropic_common.h"
