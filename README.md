@@ -46,7 +46,7 @@ sudo make install
 | `read-key` | Read back the public key from a slot | `<--slot <0-31>>` |
 | `list-keys` | List all public keys stored on the HSM | `[--verbose]` |
 | `sign` | Sign data or a file using a hardware backed key | `<--slot <0-31>>` `<--data <data> \| --file <path>>` |
-| `verify` | Verify a signature using a hardware backed or user provided key | `<--slot <0-31>>` `<--data <data> \| --file <path>>` `<--signature <signature>>` |
+| `verify` | Verify a signature using a hardware backed or user provided key | `<--slot <0-31> \| --pubkey <public key>>` `<--data <data> \| --file <path>>` `<--signature <signature>>` |
 
 ## Quick start
 
